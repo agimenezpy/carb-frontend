@@ -1,0 +1,18 @@
+.calcite-title-divider {
+    position: relative;
+    top: 0;
+    left: 0;
+    height: 100px;
+    margin: 0 15px;
+    transform: scale(0.7, 0.3);
+    transform-origin: left;
+    border-left: 1px solid; }
+
+.fade-enter-active,
+.fade-leave-active {
+transition: opacity 0.3s;
+}
+.fade-enter,
+.fade-leave-to {
+opacity: 0;
+}
