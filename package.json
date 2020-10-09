@@ -7,7 +7,7 @@
     "start": "webpack-dev-server --mode development --open",
     "build": "webpack --mode production --display-origins --display-provided-exports --display-reasons",
     "profile": "webpack --profile --json > stats.json",
-    "serve": "webpack-dev-server --mode production --open --https --compress",
+    "serve": "webpack-dev-server --mode production --open --compress",
     "prettier": "prettier --write \"src/**/*.ts?(x)\"",
     "lint": "tslint --fix \"src/**/*.ts?(x)\"",
     "test": "echo \"Error: no test specified\" && exit 1"

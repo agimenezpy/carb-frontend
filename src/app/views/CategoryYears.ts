@@ -1,20 +1,20 @@
 import Vue from 'vue';
+import Loader from './Loader';
 import { Bar, mixins } from 'vue-chartjs';
 import { Chart } from 'chart.js';
-import Loader from './Loader';
 import DualFilterUtil from './mixins';
 
 var template = `<div :class="[xclass]">
     <div class="card">
-        <div class="card-content">
-            <h5>{{header}}</h5>
+        <div class='card-content'>
+            <h5>{{header}} de {{title}}</h5>
             <Loader v-if="!loaded"/>
-            <product-chart v-if="loaded" :chart-data="chartData"></product-chart>
+            <category-years-chart v-if="loaded" :chart-data="chartData"></category-years-chart>
         </div>
     </div>
 </div>`;
 
-const ProductChart = Vue.extend({
+const CategoryYearsChart = Vue.extend({
     extends: Bar,
     mixins: [ mixins.reactiveProp ],
     props: {
@@ -57,7 +57,7 @@ const ProductChart = Vue.extend({
                             display: false
                         },
                         scaleLabel: {
-                            display: false, labelString: "Productos"
+                            display: false, labelString: "Tipo"
                         }
                     }]
                 },
@@ -70,18 +70,13 @@ const ProductChart = Vue.extend({
                 },
                 tooltips: {
                     callbacks: {
-                        label: (item: any, data: any) => Intl.NumberFormat().format(item.yLabel)
+                        label: (item: any, data: any) => Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index])
                     }
                 },
                 plugins: {
                     datalabels: {
+                        color: "white",
                         display: true,
-                        color: "#444444",
-                        labels:{
-                            value: { 
-                                font: {weight: 'bold'},
-                            }
-                        },
                         rotation: -90,
                         clamp: true,
                         anchor: 'start',
@@ -89,7 +84,7 @@ const ProductChart = Vue.extend({
                         formatter: (value: any, context: any) => Intl.NumberFormat().format(value)
                     }
                 },
-                maintainAspectRatio: true
+                maintainAspectRatio: false
             }
         }
     },
@@ -98,69 +93,73 @@ const ProductChart = Vue.extend({
     }
 });
 
-const Product = Vue.extend({
-    name: "Product",
+const CategoryYears = Vue.extend({
+    name: "CategoryYears",
     components: {
-        ProductChart, Loader
+        CategoryYearsChart, Loader
     },
     mixins: [DualFilterUtil],
     template,
     data() {
         return {
             loaded: false,
-            chartData: {},
-            colors: []
+            title: "",
+            colors: [],
+            chartData: {}
         }
     },
     props: {
         header: String,
-        xclass: String
+        type: String,
+        xclass: String,
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByProduct").then(this.updateChart);
+            this.$store.dispatch("fetchByMonth").then(this.updateChart);
         },
         updateChart(filters: object = {}) {
             this.loaded = false;
-            let products: Map<string, string> = this.$store.getters.getProducts;
-            let rawData: object[] = this.$store.getters.getProdData;
-
-            let labels: string[] = [];
+            let categories: Map<string, string> = this.$store.getters.getMCategories;
+            let rawData: number[][] = [
+                    this.$store.getters.getMDataY1,
+                    this.$store.getters.getMDataY2
+            ];
+            let lastDate = rawData[1][rawData[1].length - 1]["fecha"];
+            let lastYear = parseInt(lastDate.split("-")[0]);
             let volumes: number[] = [];
-            
+            this.title = categories.get(this.type);
+            let labels = [lastYear - 1, lastYear]
+
             if (!this.isEmpty(filters)) {
-                rawData = this.filterDualData(filters, rawData);
+                rawData[0] = this.filterMonthData(filters, rawData[0]);
+                rawData[1] = this.filterMonthData(filters, rawData[1]);
             }
-
-            products.forEach((value, key) => {
-                let qs = rawData.filter(item => item["producto"] === key);
-
-                let vol = qs.reduce((sum, item) => sum + item["volumen"], 0);
-                if (vol > 0) {
-                    labels.push(value);
-                    volumes.push(vol)
-                }
-            })
+            
+            labels.forEach((value, idx) => {
+                let vol = rawData[idx].filter(item => item["categoria"] === this.type)
+                                        .reduce((sum, item) => sum + item["volumen"], 0);
+                volumes.push(vol);
+            });
             this.setChartData(labels, volumes);
             this.loaded = true;
         },
-        setChartData(labels: string[], volumes: number[]) {
+        setChartData(labels: object, volumes: number[]) {
             this.chartData = {
                 labels: labels,
-                datasets: [
-                    {
-                        backgroundColor: this.colors,
-                        data: volumes
-                    }
-                ]
+                datasets: [{
+                    backgroundColor: (this.title == "GASOIL" ? this.colors[0] : this.colors[1]),
+                    data: volumes,
+                }]
             };
         }
     },
     mounted() {
         const schm: any = Chart["colorschemes"];
-        this.colors = schm.office.Blue6.slice(0, 2).concat(schm.office.Orange6);
+        this.colors = [schm.office.Blue6, 
+                       schm.office.Orange6.slice(0, 2).reverse()];
+        this.filters["fComp"] = false;
         this.requestData();
     }
 });
 
-export default Product;
+export default CategoryYears;

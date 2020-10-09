@@ -19,9 +19,9 @@
       <div class="grid-container">
         <div class="column-24">
           <div  class="phone-hide">
-            <nav class="top-nav-list" role="navigation" aria-labelledby="topnav">
+            <!--nav class="top-nav-list" role="navigation" aria-labelledby="topnav">
               <a href="/" class="icon-ui-menu top-nav-link js-drawer-toggle" data-drawer="top-nav"></a>
-            </nav>
+            </nav-->
             <a href="/" class="top-nav-title">{{title}}</a>
             <span class="top-nav-title"><small>{{subtitle}}</small></span>
             <nav class="top-nav-list" role="navigation" aria-labelledby="topnav">
@@ -41,26 +41,9 @@
 
   <script type="text/x-template" id="content-template">
     <div class="grid-container leader-1 trailer-1">
-          <!-- side navigation -->
-          <div class="column-4">
-            <aside class="side-nav">
-              <h2 id="sidenav" class="side-nav-title">Sidenav Group</h2>
-              <nav role="navigation" aria-labelledby="sidenav">
-                <a href="#" class="side-nav-link">Side Nav Link 1</a>
-                <a href="#" class="side-nav-link">Side Nav Link 2</a>
-                <a href="#" class="side-nav-link">Side Nav Link 3</a>
-                <a href="#" class="side-nav-link">Side Nav Link 4</a>
-              </nav>
-            </aside>
-          </div>
-      
-          <!-- main content list -->
-          <div class="column-19 pre-1">
-            <transition name="fade" mode="out-in">
-              <router-view :key="$route.path"></router-view>
-            </transition>
-          </div>
-      
+          <transition name="fade" mode="out-in">
+            <router-view :key="$route.path"></router-view>
+          </transition>
         </div>
       </div>
   </script>

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 interface State {
     status: string,
-    producto: Map<String, String>,
+    producto: Map<string, string>,
     data: object[]
 };
 
@@ -30,7 +30,7 @@ const ProductStore = {
 
     },
     getters: {
-        getProducts: (state: State): Map<String, String> => {
+        getProducts: (state: State): Map<string, string> => {
             return state.producto;
         },
         getProdData: (state: State): object[] =>  {
@@ -40,11 +40,14 @@ const ProductStore = {
     actions: {
         fetchByProduct(context: any): any {
             context.commit("setPrStatus", "PENDING");
-            const request = axios.get('api/import/by_product')
+            const request = axios.get('/api/import/by_product')
             .then(response => {
                 context.commit("setPrStatus", "DONE");
                 context.commit("setPrData", response.data.data);
                 context.commit("setProducts", response.data.producto);
+            })
+            .catch(errors => {
+                context.commit("setPrStatus", "ERROR");
             });
             return request;
         }
