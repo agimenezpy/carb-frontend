@@ -2,9 +2,9 @@ import Vue from 'vue';
 import { Bar, mixins } from 'vue-chartjs';
 import { Chart } from 'chart.js';
 import Loader from './Loader';
-import DualFilterUtil from './mixins';
+import { DualFilterUtil } from './mixins';
 
-var template = `<div :class="[xclass]">
+const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
             <h5>{{header}}</h5>
@@ -13,6 +13,11 @@ var template = `<div :class="[xclass]">
         </div>
     </div>
 </div>`;
+
+interface Record {
+    volumen: number,
+    producto: string
+}
 
 const ProductChart = Vue.extend({
     extends: Bar,
@@ -35,7 +40,7 @@ const ProductChart = Vue.extend({
                         ticks: {
                             beginAtZero: true,
                             callback: (label: number) => {
-                                let fmt = Intl.NumberFormat().format;
+                                const fmt = Intl.NumberFormat().format;
                                 if (label < 1e3) return fmt(label);
                                 if (label >= 1e6) return fmt(label / 1e6) + "M";
                                 if (label >= 1e3) return fmt(label / 1e3) + "K";
@@ -77,8 +82,8 @@ const ProductChart = Vue.extend({
                     datalabels: {
                         display: true,
                         color: "#444444",
-                        labels:{
-                            value: { 
+                        labels: {
+                            value: {
                                 font: {weight: 'bold'},
                             }
                         },
@@ -122,20 +127,20 @@ const Product = Vue.extend({
         },
         updateChart(filters: object = {}) {
             this.loaded = false;
-            let products: Map<string, string> = this.$store.getters.getProducts;
-            let rawData: object[] = this.$store.getters.getProdData;
+            const products: Map<string, string> = this.$store.getters.getProducts;
+            let rawData: Record[] = this.$store.getters.getProdData;
 
-            let labels: string[] = [];
-            let volumes: number[] = [];
-            
+            const labels: string[] = [];
+            const volumes: number[] = [];
+
             if (!this.isEmpty(filters)) {
                 rawData = this.filterDualData(filters, rawData);
             }
 
             products.forEach((value, key) => {
-                let qs = rawData.filter(item => item["producto"] === key);
+                const qs = rawData.filter(item => item.producto === key);
 
-                let vol = qs.reduce((sum, item) => sum + item["volumen"], 0);
+                const vol = qs.reduce((sum, item) => sum + item.volumen, 0);
                 if (vol > 0) {
                     labels.push(value);
                     volumes.push(vol)
@@ -146,7 +151,7 @@ const Product = Vue.extend({
         },
         setChartData(labels: string[], volumes: number[]) {
             this.chartData = {
-                labels: labels,
+                labels,
                 datasets: [
                     {
                         backgroundColor: this.colors,
@@ -157,7 +162,7 @@ const Product = Vue.extend({
         }
     },
     mounted() {
-        const schm: any = Chart["colorschemes"];
+        const schm: any = Chart.colorschemes;
         this.colors = schm.office.Blue6.slice(0, 2).concat(schm.office.Orange6);
         this.requestData();
     }

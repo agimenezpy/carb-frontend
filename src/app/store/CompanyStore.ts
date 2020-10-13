@@ -2,12 +2,12 @@ import axios from 'axios';
 
 interface State {
     status: string,
-    company: Map<number,string>,
+    company: Map<number, string>,
     category: Map<string, string>
     data: object[]
 };
 
-const state = {
+const stateObj = {
     status: "NONE",
     company: new Map(),
     category: new Map(),
@@ -15,7 +15,7 @@ const state = {
 };
 
 const CompanyStore = {
-    state,
+    state: stateObj,
     mutations: {
         setComStatus(state: State, status: string) {
             state.status = status;
@@ -26,7 +26,7 @@ const CompanyStore = {
         setCompanies(state: State, companies: object) {
             state.company = new Map();
             Object.keys(companies).forEach((key: string) => (
-                state.company.set(parseInt(key), companies[key])
+                state.company.set(parseInt(key, 10), companies[key])
             ));
         },
         setComCategory(state: State, categories: object) {

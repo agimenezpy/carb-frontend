@@ -5,10 +5,10 @@ import Footer from "./Footer";
 
 const template: string = `<div class="container">
 <div class="wrapper">
-  <Heading title="MIC" subtitle="Tablero de Control" /> 
-  
+  <Heading title="MIC" subtitle="Tablero de Control" />
+
   <Content />
-  
+
 </div>
 
 <Footer copyright="Ministerio de Industria y Comercio" />

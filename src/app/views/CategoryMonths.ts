@@ -1,9 +1,9 @@
 import Vue from 'vue';
 import Loader from './Loader';
 import { Line, mixins } from 'vue-chartjs';
-import DualFilterUtil from './mixins';
+import { DualFilterUtil, FilterObj, Record } from './mixins';
 
-var template = `<div :class="[xclass]">
+const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <h5>{{header}} de {{title}}</h5>
@@ -12,6 +12,10 @@ var template = `<div :class="[xclass]">
         </div>
     </div>
 </div>`;
+
+interface Labels {
+    [propName: string]: any
+}
 
 const CategoryMonthsChart = Vue.extend({
     extends: Line,
@@ -34,7 +38,7 @@ const CategoryMonthsChart = Vue.extend({
                         ticks: {
                             beginAtZero: true,
                             callback: (label: number) => {
-                                let fmt = Intl.NumberFormat().format;
+                                const fmt = Intl.NumberFormat().format;
                                 if (label < 1e3) return fmt(label);
                                 if (label >= 1e6) return fmt(label / 1e6) + "M";
                                 if (label >= 1e3) return fmt(label / 1e3) + "K";
@@ -75,14 +79,14 @@ const CategoryMonthsChart = Vue.extend({
                 plugins: {
                     datalabels: {
                         display: true,
-                        labels:{
-                            value: { 
+                        labels: {
+                            value: {
                                 font: {weight: 'bold'},
                             }
                         },
                         align: 'end',
                         formatter:  (label: number) => {
-                            let fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
+                            const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
                             return fmt(label / 1e6);
                         }
                     },
@@ -125,34 +129,34 @@ const CategoryMonths = Vue.extend({
         requestData() {
             this.$store.dispatch("fetchByMonth").then(this.updateChart);
         },
-        updateChart(filters: object = {}) {
+        updateChart(filters: FilterObj = {fComp: undefined, fMonth: undefined}) {
             this.loaded = false;
-            let categories: Map<string, string> = this.$store.getters.getMCategories;
-            let rawData: object[][] = [
+            const categories: Map<string, string> = this.$store.getters.getMCategories;
+            const rawData: Record[][] = [
                     this.$store.getters.getMDataY1,
                     this.$store.getters.getMDataY2
             ];
 
-            let lastDate = rawData[1][rawData[1].length - 1]["fecha"];
-            let lastYear = parseInt(lastDate.split("-")[0]);
-            let lastMonth = parseInt(lastDate.split("-")[1]);
-            let months: number[] = Array.from(Array(lastMonth + 1).keys()).slice(1);
-            let years = [lastYear - 1, lastYear];
-            let volumes: object[] = [];
+            const lastDate = rawData[1][rawData[1].length - 1].fecha;
+            const lastYear = parseInt(lastDate.split("-")[0], 10);
+            const lastMonth = parseInt(lastDate.split("-")[1], 10);
+            const months: number[] = Array.from(Array(lastMonth + 1).keys()).slice(1);
+            const years = [lastYear - 1, lastYear];
+            const volumes: object[] = [];
             this.title = categories.get(this.type);
-            let labels = {
+            const labels: Labels = {
                 "months": months.map((item) => this.MONTHS[item - 1]),
                 "years": years
             };
-            let fMonth = filters["fMonth"];
+            const fMonth = filters.fMonth;
             if (fMonth !== undefined) {
-                labels["months"] = labels["months"].filter((item: string) => fMonth.indexOf(item) >= 0);
+                labels.months = labels.months.filter((item: string) => fMonth.indexOf(item) >= 0);
             }
 
             years.forEach((value, idx) => {
-                let vols: number[] = [];
+                const vols: number[] = [];
                 months.forEach((month) => {
-                    let thisMonth = this.MONTHS[month - 1];
+                    const thisMonth = this.MONTHS[month - 1];
                     if (fMonth !== undefined && fMonth.indexOf(thisMonth) < 0) {
                         return;
                     }
@@ -160,29 +164,29 @@ const CategoryMonths = Vue.extend({
                     if (month > 10) {
                         fmt = `${value}-${month}-01`;
                     }
-                    let vol =  rawData[idx].filter(item => item["categoria"] === this.type && item["fecha"] === fmt)
-                                           .reduce((sum, item) => sum + item["volumen"], 0);
+                    const vol =  rawData[idx].filter(item => item.categoria === this.type && item.fecha === fmt)
+                                           .reduce((sum, item) => sum + item.volumen, 0);
                     vols.push(vol);
-                    
+
                 });
-                
+
                 volumes.push(vols);
             })
             this.setChartData(labels, volumes);
             this.loaded = true;
         },
-        setChartData(labels: object, volumes: object[]) {
+        setChartData(labels: Labels, volumes: object[]) {
             this.chartData = {
-                colors: this.title == "GASOIL" ? 'office.Blue6' : 'office.Orange6',
-                labels: labels["months"],
+                colors: this.title === "GASOIL" ? 'office.Blue6' : 'office.Orange6',
+                labels: labels.months,
                 datasets: [{
-                    label: labels["years"][0],
+                    label: labels.years[0],
                     data: volumes[0],
                     lineTension: 0,
                     fill: false
                 },
                 {
-                    label: labels["years"][1],
+                    label: labels.years[1],
                     data: volumes[1],
                     lineTension: 0,
                     fill: false
@@ -191,7 +195,7 @@ const CategoryMonths = Vue.extend({
         }
     },
     mounted() {
-        this.filters["fComp"] = false;
+        this.filters.fComp = false;
         this.requestData();
     }
 });

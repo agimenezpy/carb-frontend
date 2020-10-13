@@ -1,10 +1,10 @@
 import Vue from 'vue';
 import { Doughnut, mixins } from 'vue-chartjs';
 import Loader from './Loader';
-import DualFilterUtil from './mixins';
+import { DualFilterUtil, FilterObj, Record} from './mixins';
 import { Chart } from 'chart.js';
 
-var template = `<div :class="[xclass]">
+const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <h5>{{header}} de {{title}}</h5>
@@ -42,18 +42,18 @@ const CategoryChart = Vue.extend({
                         label: (item: any, data: any) => Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index])
                     }
                 },
-                rotation: (!this.chartData.invert ? 1 : -1)*0.5 * Math.PI,
+                rotation: (!this.chartData.invert ? 1 : -1) * 0.5 * Math.PI,
                 plugins: {
                     datalabels: {
                         display: (context: any) => {
-                            return !this.chartData.invert && context.dataIndex == 0 ||
-                                    this.chartData.invert && context.dataIndex == 1; 
+                            return !this.chartData.invert && context.dataIndex === 0 ||
+                                    this.chartData.invert && context.dataIndex === 1;
                         },
                         formatter: (value: any, context: any) => {
-                            let dataset = context.chart.data.datasets[0];
-                            var total = dataset.data.reduce((previousValue: number, currentValue: number) => previousValue + currentValue);
-                            var currentValue = dataset.data[context.dataIndex];
-                            var percentage = Math.floor(((currentValue/total) * 100)+0.5);         
+                            const dataset = context.chart.data.datasets[0];
+                            const total = dataset.data.reduce((previousValue: number, currentValue: number) => previousValue + currentValue);
+                            const currentValue = dataset.data[context.dataIndex];
+                            const percentage = Math.floor(((currentValue / total) * 100) + 0.5);
                             return percentage + "%";
                         },
                         color: 'white',
@@ -103,21 +103,21 @@ const Category = Vue.extend({
         requestData() {
             this.$store.dispatch("fetchByCategory").then(this.updateChart);
         },
-        updateChart(filters: object = {}) {
+        updateChart(filters: FilterObj = {fComp: undefined, fMonth: undefined}) {
             this.loaded = false;
-            let categories: Map<string, string> = this.$store.getters.getCategories;
-            let rawData: object[] = this.$store.getters.getCatData;
+            const categories: Map<string, string> = this.$store.getters.getCategories;
+            let rawData: Record[] = this.$store.getters.getCatData;
 
-            let labels: string[] = [];
-            let volumes: number[] = [];
+            const labels: string[] = [];
+            const volumes: number[] = [];
 
             if (!this.isEmpty(filters)) {
                 rawData = this.filterDualData(filters, rawData);
             }
 
             categories.forEach((value, key) => {
-                let vol = rawData.filter(item => item["categoria"] === key)
-                                 .reduce((sum, item) => sum + item["volumen"], 0);
+                const vol = rawData.filter(item => item.categoria === key)
+                                 .reduce((sum, item) => sum + item.volumen, 0);
                 if (vol > 0) {
                     labels.push(value);
                     volumes.push(vol)
@@ -129,9 +129,9 @@ const Category = Vue.extend({
         },
         setChartData(labels: string[], volumes: number[]) {
             this.chartData = {
-                colors: this.title == "GASOIL" ? this.colors[0]: this.colors[1],
+                colors: this.title === "GASOIL" ? this.colors[0] : this.colors[1],
                 invert: this.title !== "GASOIL",
-                labels: labels,
+                labels,
                 datasets: [
                     {
                         data: volumes
@@ -141,8 +141,8 @@ const Category = Vue.extend({
         }
     },
     mounted() {
-        const schemes: any = Chart["colorschemes"];
-        this.colors = [[schemes.office.Blue6[0], schemes.brewer.Blues6[0]], 
+        const schemes: any = Chart.colorschemes;
+        this.colors = [[schemes.office.Blue6[0], schemes.brewer.Blues6[0]],
                         [schemes.brewer.Oranges6[0], schemes.office.Orange6[0]]]
         this.requestData();
     }

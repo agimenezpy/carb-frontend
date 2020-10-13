@@ -4,7 +4,7 @@ const template: string = `
 <div class="footer" role="contentinfo">
   <div class="grid-container">
     <!-- footer section 1 -->
-    <div class="column-24"> 
+    <div class="column-24">
     <hr>
       <div class="column-8">
         <p><span class="icon-ui-globe"></span>Copyright &copy; {{new Date().getFullYear()}} {{copyright}}</p>

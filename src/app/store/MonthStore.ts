@@ -46,12 +46,12 @@ const MonthStore = {
     actions: {
         fetchByMonth(context: any) {
             if (context.state.status !== "PENDING") {
-                let year = 2020; //(new Date()).getFullYear();
+                const year = 2020; // (new Date()).getFullYear();
                 context.commit("setMStatus", "PENDING");
-                let ylast = axios.get(`/api/import/by_month/${year - 1}`);
-                let yprev = axios.get(`/api/import/by_month/${year}`);
+                const ylast = axios.get(`/api/import/by_month/${year - 1}`);
+                const yprev = axios.get(`/api/import/by_month/${year}`);
                 context.state.request = axios.all([ylast, yprev])
-                    .then(axios.spread((...responses: any) => { 
+                    .then(axios.spread((...responses: any) => {
                         context.commit("setMStatus", "DONE");
                         context.commit("setMDataY1", responses[0].data.data);
                         context.commit("setMDataY2", responses[1].data.data);

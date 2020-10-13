@@ -9,7 +9,7 @@ const FilterStore = {
     state: {
         months: [],
         comps: [],
-        MONTHS: ["Enero", "Febrero", "Marzo", 
+        MONTHS: ["Enero", "Febrero", "Marzo",
                 "Abril", "Mayo", "Junio",
                 "Julio", "Agosto", "Setiembre",
                 "Octubre", "Noviembre", "Diciembre"],

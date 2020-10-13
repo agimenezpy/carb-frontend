@@ -2,17 +2,22 @@ import Vue from 'vue';
 import {mapState} from 'vuex';
 
 const template = `<div class="">
-    <h4 class="side-nav-title">
-        <div class="column-4">Filtro por mes</div>
-        <div title="Limpiar Filtros" class="icon-ui-filter icon-ui-gray" :class="{'icon-ui-red': filtered}" v-on:click="checkEvent"></div>
+    <h4 class="side-nav-title" >
+        <div class="column-3">Filtro por mes</div>
+        <div class="text-right">
+        <a title="Filtrar" role="button" class="icon-ui-checkbox-checked link-off-black" :class="{'icon-ui-checkbox-unchecked': filtered, 'icon-ui-gray': !show}" v-on:click="checkEvent"></a>
+        <a title="Mostrar/Ocultar" role="button" class="icon-ui-down link-off-black" :class="{'icon-ui-up': show}" @click="show = !show"></a>
+        </div>
     </h4>
-    <nav role="navigation" aria-labelledby="sidenav">
-    <fieldset class="fieldset-checkbox">
-        <template v-for="mes in meses">
-            <label class="side-nav-link font-size--2"><input type="checkbox" name="meses" :value="mes" v-model="checked" @change="checkMonth">{{mes}}</label>
-        </template>
-    </fieldset>
-    </nav>
+    <transition name="fade">
+        <nav role="navigation" aria-labelledby="sidenav" v-if="show">
+        <fieldset class="fieldset-checkbox">
+            <template v-for="mes in meses">
+                <span class="side-nav-link font-size--6"><input type="checkbox" name="meses" :value="mes" v-model="checked" @change="checkMonth">{{mes}}</span>
+            </template>
+        </fieldset>
+        </nav>
+    </transition>
 </div>`
 
 
@@ -21,7 +26,8 @@ const FilterMonth = Vue.extend({
     data() {
         return {
             checked: [],
-            filtered: false
+            filtered: false,
+            show: true
         }
     },
     computed: {
@@ -32,17 +38,11 @@ const FilterMonth = Vue.extend({
     methods: {
         checkEvent(event: any) {
             this.filtered = !this.filtered;
-            if (!this.filtered) {
-                this.checked = this.meses;
-            }
-            else {
-                this.checked = [];
-            }
+            this.checked = (!this.filtered) ? this.meses : [];
             this.$store.dispatch("setFilterMonth", this.checked);
         },
         checkMonth(event: any) {
-            let count = this.checked.length
-            this.filtered =  count < this.meses.length;
+            this.filtered =  this.checked.length < this.meses.length;
             this.$store.dispatch("setFilterMonth", this.checked);
         }
     },

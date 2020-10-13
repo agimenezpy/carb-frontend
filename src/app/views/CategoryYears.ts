@@ -2,9 +2,9 @@ import Vue from 'vue';
 import Loader from './Loader';
 import { Bar, mixins } from 'vue-chartjs';
 import { Chart } from 'chart.js';
-import DualFilterUtil from './mixins';
+import { DualFilterUtil, Record } from './mixins';
 
-var template = `<div :class="[xclass]">
+const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <h5>{{header}} de {{title}}</h5>
@@ -35,7 +35,7 @@ const CategoryYearsChart = Vue.extend({
                         ticks: {
                             beginAtZero: true,
                             callback: (label: number) => {
-                                let fmt = Intl.NumberFormat().format;
+                                const fmt = Intl.NumberFormat().format;
                                 if (label < 1e3) return fmt(label);
                                 if (label >= 1e6) return fmt(label / 1e6) + "M";
                                 if (label >= 1e3) return fmt(label / 1e3) + "K";
@@ -119,25 +119,25 @@ const CategoryYears = Vue.extend({
         },
         updateChart(filters: object = {}) {
             this.loaded = false;
-            let categories: Map<string, string> = this.$store.getters.getMCategories;
-            let rawData: number[][] = [
+            const categories: Map<string, string> = this.$store.getters.getMCategories;
+            const rawData: Record[][] = [
                     this.$store.getters.getMDataY1,
                     this.$store.getters.getMDataY2
             ];
-            let lastDate = rawData[1][rawData[1].length - 1]["fecha"];
-            let lastYear = parseInt(lastDate.split("-")[0]);
-            let volumes: number[] = [];
+            const lastDate = rawData[1][rawData[1].length - 1].fecha;
+            const lastYear = parseInt(lastDate.split("-")[0], 10);
+            const volumes: number[] = [];
             this.title = categories.get(this.type);
-            let labels = [lastYear - 1, lastYear]
+            const labels = [lastYear - 1, lastYear]
 
             if (!this.isEmpty(filters)) {
                 rawData[0] = this.filterMonthData(filters, rawData[0]);
                 rawData[1] = this.filterMonthData(filters, rawData[1]);
             }
-            
+
             labels.forEach((value, idx) => {
-                let vol = rawData[idx].filter(item => item["categoria"] === this.type)
-                                        .reduce((sum, item) => sum + item["volumen"], 0);
+                const vol = rawData[idx].filter(item => item.categoria === this.type)
+                                        .reduce((sum, item) => sum + item.volumen, 0);
                 volumes.push(vol);
             });
             this.setChartData(labels, volumes);
@@ -145,19 +145,19 @@ const CategoryYears = Vue.extend({
         },
         setChartData(labels: object, volumes: number[]) {
             this.chartData = {
-                labels: labels,
+                labels,
                 datasets: [{
-                    backgroundColor: (this.title == "GASOIL" ? this.colors[0] : this.colors[1]),
+                    backgroundColor: (this.title === "GASOIL" ? this.colors[0] : this.colors[1]),
                     data: volumes,
                 }]
             };
         }
     },
     mounted() {
-        const schm: any = Chart["colorschemes"];
-        this.colors = [schm.office.Blue6, 
+        const schm: any = Chart.colorschemes;
+        this.colors = [schm.office.Blue6,
                        schm.office.Orange6.slice(0, 2).reverse()];
-        this.filters["fComp"] = false;
+        this.filters.fComp = false;
         this.requestData();
     }
 });

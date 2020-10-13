@@ -1,9 +1,9 @@
 import Vue from 'vue';
 import { HorizontalBar, mixins } from 'vue-chartjs';
 import Loader from './Loader';
-import DualFilterUtil from './mixins';
+import { DualFilterUtil, FilterObj } from './mixins';
 
-var template = `<div :class="[xclass]">
+const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
             <h5>{{header}}</h5>
@@ -12,6 +12,13 @@ var template = `<div :class="[xclass]">
         </div>
     </div>
 </div>`;
+
+interface Labels {
+    companies: string[],
+    categories: string[]
+}
+
+interface Record { [propName: string] : any }
 
 const CompanyChart = Vue.extend({
     extends: HorizontalBar,
@@ -34,7 +41,7 @@ const CompanyChart = Vue.extend({
                         ticks: {
                             beginAtZero: true,
                             callback: (label: number) => {
-                                let fmt = Intl.NumberFormat().format;
+                                const fmt = Intl.NumberFormat().format;
                                 if (label < 1e3) return fmt(label);
                                 if (label >= 1e6) return fmt(label / 1e6) + "M";
                                 if (label >= 1e3) return fmt(label / 1e3) + "K";
@@ -114,44 +121,44 @@ const Company = Vue.extend({
         requestData() {
             this.$store.dispatch("fetchByCompany").then(this.updateChart);
         },
-        updateChart(filters: object = {}){
+        updateChart(filters: FilterObj = {fComp: undefined, fMonth: undefined}){
             this.loaded = false;
-            let companies: Map<number, string> = this.$store.getters.getCompanies;
-            let category: Map<string, string> = this.$store.getters.getComCategory;
-            let rawData: object[] = this.$store.getters.getComData;
-            let lastDate = rawData[rawData.length - 1]["fecha"];
-            let lastYear = parseInt(lastDate.split("-")[0]);
-            let fMonth = filters["fMonth"];
-            let fComp = filters["fComp"];
+            const companies: Map<number, string> = this.$store.getters.getCompanies;
+            const category: Map<string, string> = this.$store.getters.getComCategory;
+            const rawData: Record[] = this.$store.getters.getComData;
+            const lastDate = rawData[rawData.length - 1].fecha;
+            const lastYear = parseInt(lastDate.split("-")[0], 10);
+            const fMonth = filters.fMonth;
+            const fComp = filters.fComp;
 
-            let labels = {
+            const labels: Labels = {
                 "companies": new Array<string>(),
                 "categories": Array.from(category).map(item => (item[1]))
             };
-            let volumes: object[] = [];
+            const volumes: object[] = [];
             let months = "";
             if (fMonth !== undefined) {
                 months = fMonth.map((mItem: string) => this.MONTHS.indexOf(mItem) + 1).join("|")
             }
 
             companies.forEach((value, key) => {
-                let vols: Array<number> = [];
+                const vols: number[] = [];
                 let total: number = 0;
                 if (fComp !== undefined && fComp.indexOf(key) < 0) {
                     return;
                 }
                 category.forEach((cat, catkey) => {
-                    let qs =  rawData.filter(item => item["distribuidor"] === key && item["categoria"] == catkey);
+                    let qs =  rawData.filter(item => item.distribuidor === key && item.categoria === catkey);
                     if (fMonth !== undefined) {
-                        qs = qs.filter(item => item["fecha"].match(`${lastYear}-0?(${months})-01`))
+                        qs = qs.filter(item => item.fecha.match(`${lastYear}-0?(${months})-01`))
                     }
-                                        
-                    let vol = qs.reduce((sum, item) => sum + item["volumen"], 0);
+
+                    const vol = qs.reduce((sum, item) => sum + item.volumen, 0);
                     vols.push(vol);
                     total += vol;
                 })
                 if (total > 0) {
-                    labels["companies"].push(this.cleanNames(value))
+                    labels.companies.push(this.cleanNames(value))
                     volumes.push(vols);
                 }
             })
@@ -164,15 +171,15 @@ const Company = Vue.extend({
             result = result.replace(regex, "");
             return result;
         },
-        setChartData(labels: object, volumes: object[]) {
+        setChartData(labels: Labels, volumes: object[]) {
             this.chartData = {
-                labels: labels["companies"],
+                labels: labels.companies,
                 datasets: [{
-                    label: labels["categories"][0],
+                    label: labels.categories[0],
                     data: volumes.map((item: any) => (item[0]))
                 },
                 {
-                    label: labels["categories"][1],
+                    label: labels.categories[1],
                     data: volumes.map((item: any) => (item[1]))
                 }]
             }
