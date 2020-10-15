@@ -12,7 +12,7 @@ const template: string = `<div class="container">
 </div>
 
 <Footer copyright="Ministerio de Industria y Comercio" />
-</div>`
+</div>`;
 
 const App = Vue.extend({
     name: "App",
@@ -22,7 +22,7 @@ const App = Vue.extend({
     data() {
         return {
             message: "Hello World" as string
-        }
+        };
     },
     methods: {
         handleClick(): void {

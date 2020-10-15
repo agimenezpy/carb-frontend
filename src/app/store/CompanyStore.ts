@@ -1,21 +1,19 @@
 import axios from 'axios';
 
 interface State {
-    status: string,
-    company: Map<number, string>,
-    category: Map<string, string>
-    data: object[]
-};
-
-const stateObj = {
-    status: "NONE",
-    company: new Map(),
-    category: new Map(),
-    data: []
-};
+    status: string;
+    company: Map<number, string>;
+    category: Map<string, string>;
+    data: object[];
+}
 
 const CompanyStore = {
-    state: stateObj,
+    state: {
+        status: "NONE",
+        company: new Map(),
+        category: new Map(),
+        data: []
+    },
     mutations: {
         setComStatus(state: State, status: string) {
             state.status = status;

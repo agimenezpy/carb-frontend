@@ -1,19 +1,17 @@
 import axios from 'axios';
 
 interface State {
-    status: string,
-    producto: Map<string, string>,
-    data: object[]
-};
-
-const state = {
-    status: "NONE",
-    producto: new Map(),
-    data: []
-};
+    status: string;
+    producto: Map<string, string>;
+    data: object[];
+}
 
 const ProductStore = {
-    state,
+    state: {
+        status: "NONE",
+        producto: new Map(),
+        data: []
+    },
     mutations: {
         setPrStatus(state: State, status: string) {
             state.status = status;

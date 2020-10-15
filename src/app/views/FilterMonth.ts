@@ -3,7 +3,7 @@ import {mapState} from 'vuex';
 
 const template = `<div class="">
     <h4 class="side-nav-title" >
-        <div class="column-3">Filtro por mes</div>
+        <div class="column-3 font-size--3">Filtro por mes</div>
         <div class="text-right">
         <a title="Filtrar" role="button" class="icon-ui-checkbox-checked link-off-black" :class="{'icon-ui-checkbox-unchecked': filtered, 'icon-ui-gray': !show}" v-on:click="checkEvent"></a>
         <a title="Mostrar/Ocultar" role="button" class="icon-ui-down link-off-black" :class="{'icon-ui-up': show}" @click="show = !show"></a>
@@ -12,13 +12,13 @@ const template = `<div class="">
     <transition name="fade">
         <nav role="navigation" aria-labelledby="sidenav" v-if="show">
         <fieldset class="fieldset-checkbox">
-            <template v-for="mes in meses">
-                <span class="side-nav-link font-size--6"><input type="checkbox" name="meses" :value="mes" v-model="checked" @change="checkMonth">{{mes}}</span>
+            <template v-for="(mes, idx) in meses">
+                <span class="side-nav-link font-size--6"><input type="checkbox" name="meses" :value="idx+1" v-model="checked" @change="checkMonth">{{mes}}</span>
             </template>
         </fieldset>
         </nav>
     </transition>
-</div>`
+</div>`;
 
 
 const FilterMonth = Vue.extend({
@@ -28,7 +28,7 @@ const FilterMonth = Vue.extend({
             checked: [],
             filtered: false,
             show: true
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -38,7 +38,7 @@ const FilterMonth = Vue.extend({
     methods: {
         checkEvent(event: any) {
             this.filtered = !this.filtered;
-            this.checked = (!this.filtered) ? this.meses : [];
+            this.checked = (!this.filtered) ? Array.from(this.meses.keys()).map((value: number) => (value + 1)) : [];
             this.$store.dispatch("setFilterMonth", this.checked);
         },
         checkMonth(event: any) {
@@ -47,7 +47,7 @@ const FilterMonth = Vue.extend({
         }
     },
     mounted() {
-        this.checked = this.meses;
+        this.checked = Array.from(this.meses.keys()).map((value: number) => (value + 1));
     },
     template
 });

@@ -1,140 +1,52 @@
 import Vue from 'vue';
-import { Bar, mixins } from 'vue-chartjs';
-import { Chart } from 'chart.js';
+import { ProductChart, ColorSchemes } from './Charts';
 import Loader from './Loader';
-import { DualFilterUtil } from './mixins';
+import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp, WatchDepto} from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
             <h5>{{header}}</h5>
             <Loader v-if="!loaded"/>
-            <product-chart v-if="loaded" :chart-data="chartData"></product-chart>
+            <product-chart v-if="loaded" :chart-data="chartData" :aspect="aspect"></product-chart>
         </div>
     </div>
 </div>`;
-
-interface Record {
-    volumen: number,
-    producto: string
-}
-
-const ProductChart = Vue.extend({
-    extends: Bar,
-    mixins: [ mixins.reactiveProp ],
-    props: {
-        chartData: {
-            type: Object,
-            required: false
-        },
-        title: {
-            type: String,
-            required: false
-        }
-    },
-    data() {
-        return {
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            callback: (label: number) => {
-                                const fmt = Intl.NumberFormat().format;
-                                if (label < 1e3) return fmt(label);
-                                if (label >= 1e6) return fmt(label / 1e6) + "M";
-                                if (label >= 1e3) return fmt(label / 1e3) + "K";
-                            }
-                        },
-                        gridLines: {
-                            display: true
-                        },
-                        scaleLabel: {
-                            display: true,
-                            labelString: "Litros"
-                        }
-                    }],
-                    xAxes: [{
-                        ticks: {
-                            display: true
-                        },
-                        gridLines: {
-                            display: false
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Productos"
-                        }
-                    }]
-                },
-                legend: {
-                    display: false
-                },
-                title: {
-                    display: this.title !== undefined,
-                    text: this.title
-                },
-                tooltips: {
-                    callbacks: {
-                        label: (item: any, data: any) => Intl.NumberFormat().format(item.yLabel)
-                    }
-                },
-                plugins: {
-                    datalabels: {
-                        display: true,
-                        color: "#444444",
-                        labels: {
-                            value: {
-                                font: {weight: 'bold'},
-                            }
-                        },
-                        rotation: -90,
-                        clamp: true,
-                        anchor: 'start',
-                        align: 'end',
-                        formatter: (value: any, context: any) => Intl.NumberFormat().format(value)
-                    }
-                },
-                maintainAspectRatio: true
-            }
-        }
-    },
-    mounted() {
-        this.renderChart(this.chartData, this.options);
-    }
-});
 
 const Product = Vue.extend({
     name: "Product",
     components: {
         ProductChart, Loader
     },
-    mixins: [DualFilterUtil],
+    mixins: [FilterUtil, WatchMonth, WatchComp, WatchDepto],
     template,
     data() {
         return {
             loaded: false,
             chartData: {},
             colors: []
-        }
+        };
     },
     props: {
         header: String,
-        xclass: String
+        xclass: String,
+        aspect: {
+            type: Boolean,
+            default: true,
+            required: false
+        }
     },
     methods: {
-        requestData() {
-            this.$store.dispatch("fetchByProduct").then(this.updateChart);
-        },
-        updateChart(filters: object = {}) {
+        updateChart(filters: FilterObj = {}) {
             this.loaded = false;
-            const products: Map<string, string> = this.$store.getters.getProducts;
-            let rawData: Record[] = this.$store.getters.getProdData;
+            const products: Map<string, string> = this.products;
+            let rawData: Record[] = this.rawData;
 
             const labels: string[] = [];
             const volumes: number[] = [];
 
             if (!this.isEmpty(filters)) {
-                rawData = this.filterDualData(filters, rawData);
+                rawData = this.doFilter(filters, rawData);
             }
 
             products.forEach((value, key) => {
@@ -143,9 +55,9 @@ const Product = Vue.extend({
                 const vol = qs.reduce((sum, item) => sum + item.volumen, 0);
                 if (vol > 0) {
                     labels.push(value);
-                    volumes.push(vol)
+                    volumes.push(vol);
                 }
-            })
+            });
             this.setChartData(labels, volumes);
             this.loaded = true;
         },
@@ -162,10 +74,51 @@ const Product = Vue.extend({
         }
     },
     mounted() {
-        const schm: any = Chart.colorschemes;
+        const schm = ColorSchemes.getColorSchemes();
         this.colors = schm.office.Blue6.slice(0, 2).concat(schm.office.Orange6);
-        this.requestData();
     }
 });
 
-export default Product;
+const ProductImport = Vue.extend({
+    extends: Product,
+    mixins: [WatchMonth, WatchComp],
+    methods: {
+        doFilter(filters: FilterObj, rawData: Record[]) {
+            return this.filterDualData(filters, rawData);
+        }
+    },
+    computed: {
+        products() {
+            return this.$store.getters.getProducts;
+        },
+        rawData() {
+            return this.$store.getters.getProdData;
+        }
+    },
+    mounted() {
+        this.$store.dispatch("fetchByProduct").then(this.updateChart);
+    }
+});
+
+const ProductSales = Vue.extend({
+    extends: Product,
+    mixins: [WatchMonth, WatchComp, WatchDepto],
+    methods: {
+        doFilter(filters: FilterObj, rawData: Record[]) {
+            return this.filterData(filters, rawData);
+        }
+    },
+    computed: {
+        products() {
+            return this.$store.getters["sales/getProducts"];
+        },
+        rawData() {
+            return this.$store.getters["sales/getData"]("sales/by_product");
+        }
+    },
+    mounted() {
+        this.$store.dispatch("sales/fetchByName", "by_product").then(this.updateChart);
+    }
+});
+
+export { ProductSales, ProductImport };

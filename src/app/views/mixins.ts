@@ -1,21 +1,36 @@
 import {mapGetters, mapState} from 'vuex';
 
 export interface FilterObj {
-    fComp: number[] | undefined,
-    fMonth: string[] | undefined
+    [propName: string] : any;
 }
 
 export interface Record {
-    [propName: string] : any
+    [propName: string] : any;
 }
 
-const DualFilterUtil = {
+const FilterUtil = {
     data() {
         return {
             filters: {}
-        }
+        };
     },
     methods: {
+        filterData(filters: FilterObj, rawData: Record[]) {
+            const fComp = filters.fComp;
+            const fMonth = filters.fMonth;
+            const fDepto = filters.fDepto;
+            let months = "";
+            if (fMonth !== undefined) {
+                const lastDate = rawData[rawData.length - 1].fecha;
+                const lastYear = parseInt(lastDate.split("-")[0], 10);
+                months = `${lastYear}-0?(${fMonth.join("|")})-01`;
+            }
+            return rawData.filter(item => (
+                                 ((fMonth !== undefined) ? item.fecha.match(months) : true) &&
+                                  ((fComp !== undefined) ? fComp.indexOf(item.distribuidor) >= 0 : true)) &&
+                                  ((fDepto !== undefined) ? fDepto.indexOf(item.departamento) >= 0 : true));
+
+        },
         filterDualData(filters: FilterObj, rawData: Record[]) {
             const fComp = filters.fComp;
             const fMonth = filters.fMonth;
@@ -23,8 +38,7 @@ const DualFilterUtil = {
             if (fMonth !== undefined) {
                 const lastDate = rawData[rawData.length - 1].fecha;
                 const lastYear = parseInt(lastDate.split("-")[0], 10);
-                months = fMonth.map((mItem: string) => this.MONTHS.indexOf(mItem) + 1).join("|")
-                months = `${lastYear}-0?(${months})-01`
+                months = `${lastYear}-0?(${fMonth.join("|")})-01`;
             }
             return rawData.filter(item => (
                                  ((fMonth !== undefined) ? item.fecha.match(months) : true) &&
@@ -41,15 +55,17 @@ const DualFilterUtil = {
             if (fMonth !== undefined) {
                 const lastDate = rawData[rawData.length - 1].fecha;
                 const lastYear = parseInt(lastDate.split("-")[0], 10);
-                months = fMonth.map((mItem: string) => this.MONTHS.indexOf(mItem) + 1).join("|")
-                months = `${lastYear}-0?(${months})-01`
+                months = `${lastYear}-0?(${fMonth.join("|")})-01`;
             }
             return rawData.filter(item => ((fMonth !== undefined) ? item.fecha.match(months) : true));
         },
         isEmpty(filter: object) {
             return Object.keys(filter).length === 0;
         }
-    },
+    }
+};
+
+const WatchMonth = {
     watch: {
         month(fMonth: string[]) {
             this.filters.fMonth = undefined;
@@ -57,11 +73,21 @@ const DualFilterUtil = {
                 this.filters.fMonth = fMonth;
             }
             this.updateChart(this.filters);
-        },
+        }
+    },
+    computed: {
+        ...mapGetters({
+            month: "getFMonth",
+        }),
+        ...mapState({
+            MONTHS: (state: any) => state.FilterStore.MONTHS
+        })
+    },
+};
+
+const WatchComp = {
+    watch: {
         company(fComp: number[]) {
-            if (typeof this.filters.fComp === "boolean") {
-                return;
-            }
             this.filters.fComp = undefined;
             if (fComp.length < this.COMPY.size) {
                 this.filters.fComp = fComp;
@@ -71,16 +97,34 @@ const DualFilterUtil = {
     },
     computed: {
         ...mapGetters({
-            company: "getFCompany",
-            month: "getFMonth"
+            company: "getFCompany"
         }),
         ...mapState({
-            MONTHS: (state: any) => state.FilterStore.MONTHS,
             COMPY: (state: any) => state.FilterStore.COMPY
         })
+    }
+};
+
+const WatchDepto = {
+    watch: {
+        department(fDepto: number[]) {
+            this.filters.fDepto = undefined;
+            if (fDepto.length < this.DPTOPY.size) {
+                this.filters.fDepto = fDepto;
+            }
+            this.updateChart(this.filters);
+        }
     },
-}
+    computed: {
+        ...mapGetters({
+            department: "getFDepto"
+        }),
+        ...mapState({
+            DPTOPY: (state: any) => state.FilterStore.DPTOPY
+        })
+    }
+};
 
 export {
-    DualFilterUtil
+    FilterUtil, WatchMonth, WatchComp, WatchDepto
 };

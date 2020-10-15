@@ -1,8 +1,7 @@
 import Vue from 'vue';
 import Loader from './Loader';
-import { Bar, mixins } from 'vue-chartjs';
-import { Chart } from 'chart.js';
-import { DualFilterUtil, Record } from './mixins';
+import { CategoryYearsChart, ColorSchemes } from './Charts';
+import { FilterUtil, Record, WatchMonth } from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
@@ -14,91 +13,14 @@ const template = `<div :class="[xclass]">
     </div>
 </div>`;
 
-const CategoryYearsChart = Vue.extend({
-    extends: Bar,
-    mixins: [ mixins.reactiveProp ],
-    props: {
-        chartData: {
-            type: Object,
-            required: false
-        },
-        title: {
-            type: String,
-            required: false
-        }
-    },
-    data() {
-        return {
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            callback: (label: number) => {
-                                const fmt = Intl.NumberFormat().format;
-                                if (label < 1e3) return fmt(label);
-                                if (label >= 1e6) return fmt(label / 1e6) + "M";
-                                if (label >= 1e3) return fmt(label / 1e3) + "K";
-                            }
-                        },
-                        gridLines: {
-                            display: true
-                        },
-                        scaleLabel: {
-                            display: true,
-                            labelString: "Litros"
-                        }
-                    }],
-                    xAxes: [{
-                        ticks: {
-                            display: true
-                        },
-                        gridLines: {
-                            display: false
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Tipo"
-                        }
-                    }]
-                },
-                legend: {
-                    display: false
-                },
-                title: {
-                    display: this.title !== undefined,
-                    text: this.title
-                },
-                tooltips: {
-                    callbacks: {
-                        label: (item: any, data: any) => Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index])
-                    }
-                },
-                plugins: {
-                    datalabels: {
-                        color: "white",
-                        display: true,
-                        rotation: -90,
-                        clamp: true,
-                        anchor: 'start',
-                        align: 'end',
-                        formatter: (value: any, context: any) => Intl.NumberFormat().format(value)
-                    }
-                },
-                maintainAspectRatio: false
-            }
-        }
-    },
-    mounted() {
-        this.renderChart(this.chartData, this.options);
-    }
-});
+
 
 const CategoryYears = Vue.extend({
     name: "CategoryYears",
     components: {
         CategoryYearsChart, Loader
     },
-    mixins: [DualFilterUtil],
+    mixins: [FilterUtil, WatchMonth],
     template,
     data() {
         return {
@@ -106,7 +28,7 @@ const CategoryYears = Vue.extend({
             title: "",
             colors: [],
             chartData: {}
-        }
+        };
     },
     props: {
         header: String,
@@ -128,7 +50,7 @@ const CategoryYears = Vue.extend({
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const volumes: number[] = [];
             this.title = categories.get(this.type);
-            const labels = [lastYear - 1, lastYear]
+            const labels = [lastYear - 1, lastYear];
 
             if (!this.isEmpty(filters)) {
                 rawData[0] = this.filterMonthData(filters, rawData[0]);
@@ -154,10 +76,9 @@ const CategoryYears = Vue.extend({
         }
     },
     mounted() {
-        const schm: any = Chart.colorschemes;
+        const schm = ColorSchemes.getColorSchemes();
         this.colors = [schm.office.Blue6,
                        schm.office.Orange6.slice(0, 2).reverse()];
-        this.filters.fComp = false;
         this.requestData();
     }
 });

@@ -1,8 +1,8 @@
 import Vue from 'vue';
-import { Doughnut, mixins } from 'vue-chartjs';
 import Loader from './Loader';
-import { DualFilterUtil, FilterObj, Record} from './mixins';
-import { Chart } from 'chart.js';
+import { CategoryChart, ColorSchemes } from './Charts';
+import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp } from './mixins';
+
 
 const template = `<div :class="[xclass]">
     <div class="card">
@@ -14,77 +14,12 @@ const template = `<div :class="[xclass]">
     </div>
 </div>`;
 
-const CategoryChart = Vue.extend({
-    extends: Doughnut,
-    mixins: [ mixins.reactiveProp ],
-    props: {
-        chartData: {
-            type: Object,
-            required: false
-        },
-        title: {
-            type: String,
-            required: false
-        }
-    },
-    data() {
-        return {
-            options: {
-                legend: {
-                    display: false
-                },
-                title: {
-                    display: this.title !== undefined,
-                    text: this.title
-                },
-                tooltips: {
-                    callbacks: {
-                        label: (item: any, data: any) => Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index])
-                    }
-                },
-                rotation: (!this.chartData.invert ? 1 : -1) * 0.5 * Math.PI,
-                plugins: {
-                    datalabels: {
-                        display: (context: any) => {
-                            return !this.chartData.invert && context.dataIndex === 0 ||
-                                    this.chartData.invert && context.dataIndex === 1;
-                        },
-                        formatter: (value: any, context: any) => {
-                            const dataset = context.chart.data.datasets[0];
-                            const total = dataset.data.reduce((previousValue: number, currentValue: number) => previousValue + currentValue);
-                            const currentValue = dataset.data[context.dataIndex];
-                            const percentage = Math.floor(((currentValue / total) * 100) + 0.5);
-                            return percentage + "%";
-                        },
-                        color: 'white',
-                        labels: {
-                            value: {
-                                font: {
-                                    weight: 'bold',
-                                    size: '16'
-                                }
-                            }
-                        }
-                    },
-                    colorschemes: {
-                        scheme: this.chartData.colors
-                    }
-                },
-                maintainAspectRatio: true
-            }
-        }
-    },
-    mounted() {
-        this.renderChart(this.chartData, this.options);
-    }
-});
-
 const Category = Vue.extend({
     name: "Category",
     components: {
         CategoryChart, Loader
     },
-    mixins: [DualFilterUtil],
+    mixins: [FilterUtil, WatchMonth, WatchComp],
     template,
     data() {
         return {
@@ -92,7 +27,7 @@ const Category = Vue.extend({
             chartData: {},
             colors: [],
             title: ""
-        }
+        };
     },
     props: {
         header: String,
@@ -120,9 +55,9 @@ const Category = Vue.extend({
                                  .reduce((sum, item) => sum + item.volumen, 0);
                 if (vol > 0) {
                     labels.push(value);
-                    volumes.push(vol)
+                    volumes.push(vol);
                 }
-            })
+            });
             this.title = categories.get(this.type);
             this.loaded = true;
             this.setChartData(labels, volumes);
@@ -137,13 +72,13 @@ const Category = Vue.extend({
                         data: volumes
                     }
                 ]
-            }
+            };
         }
     },
     mounted() {
-        const schemes: any = Chart.colorschemes;
+        const schemes = ColorSchemes.getColorSchemes();
         this.colors = [[schemes.office.Blue6[0], schemes.brewer.Blues6[0]],
-                        [schemes.brewer.Oranges6[0], schemes.office.Orange6[0]]]
+                        [schemes.brewer.Oranges6[0], schemes.office.Orange6[0]]];
         this.requestData();
     }
 });

@@ -1,5 +1,6 @@
 'esversion: 6';
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const CopyWebpackPlugin  = require("copy-webpack-plugin");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -96,7 +97,7 @@ module.exports = (env, options) => {
     plugins: [
       new CleanWebpackPlugin(),
 
-        new HtmlWebPackPlugin({
+      new HtmlWebPackPlugin({
         title: "ArcGIS Template Application",
         template: "./src/index.html",
         filename: "./index.html",
@@ -107,7 +108,9 @@ module.exports = (env, options) => {
       new MiniCssExtractPlugin({
         filename: "[name].[chunkhash].css",
         chunkFilename: "[id].css",
-      })
+      }),
+
+      new CopyWebpackPlugin([ { from: 'src/assets', to: 'assets' } ])
     ],
     resolve: {
       modules: [

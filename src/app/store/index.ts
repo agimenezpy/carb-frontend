@@ -5,10 +5,11 @@ import CategoryStore from './CategoryStore';
 import CompanyStore from './CompanyStore';
 import MonthStore from './MonthStore';
 import FilterStore from './FilterStore';
+import SalesStore from './SalesStore';
 
 Vue.use(Vuex);
 
-const modules = {ProductStore, CategoryStore, CompanyStore, MonthStore, FilterStore};
+const modules = {ProductStore, CategoryStore, CompanyStore, MonthStore, FilterStore, sales: SalesStore};
 
 const Store = new Vuex.Store({
     modules

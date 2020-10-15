@@ -18,7 +18,7 @@
     <header class="top-nav">
       <div class="grid-container">
         <div class="column-24">
-          <div  class="phone-hide">
+          <div class="phone-hide">
             <!--nav class="top-nav-list" role="navigation" aria-labelledby="topnav">
               <a href="/" class="icon-ui-menu top-nav-link js-drawer-toggle" data-drawer="top-nav"></a>
             </nav-->
@@ -26,11 +26,10 @@
             <span class="top-nav-title"><small>{{subtitle}}</small></span>
             <nav class="top-nav-list" role="navigation" aria-labelledby="topnav">
               <router-link to="/dashboard" class="top-nav-link" exact  active-class="is-active">Importación</router-link>
-              <!--a class="top-nav-link link-off-black" href="#">Participación</a>
-              <a class="top-nav-link link-off-black" href="#">Precios</a-->
+              <router-link to="/sales" class="top-nav-link" exact  active-class="is-active">Ventas</router-link>
             </nav>
-            <nav class="class-top-nav-list right" role="navigation" aria-labelledby="usernav">
-              <img :src="'http://gis.mic.gov.py/static/img/mic.png'" width="200">
+            <nav class="class-top-nav-list right tablet-hide" role="navigation" aria-labelledby="usernav">
+              <img :src="'assets/img/mic.png'" class="esri-logo modifier-class" width="400">
             </nav>
           </div>
 

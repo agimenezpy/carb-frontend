@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 interface State {
-    status: string,
-    category: Map<string, string>,
-    data: object[],
-    request: object
-};
+    status: string;
+    category: Map<string, string>;
+    data: object[];
+    request: object;
+}
 
 const CategoryStore = {
     state: {

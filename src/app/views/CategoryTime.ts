@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import { Line, mixins } from 'vue-chartjs';
-import { DualFilterUtil, FilterObj, Record } from './mixins';
+import { CategoryTimeChart } from './Charts';
+import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp, WatchDepto } from './mixins';
 import Loader from './Loader';
 
 const template = `<div :class="[xclass]">
@@ -14,98 +14,15 @@ const template = `<div :class="[xclass]">
 </div>`;
 
 interface Labels {
-    [propName: string]: string[]
+    [propName: string]: string[];
 }
-
-const CategoryTimeChart = Vue.extend({
-    extends: Line,
-    mixins: [ mixins.reactiveProp ],
-    props: {
-        chartData: {
-            type: Object,
-            required: false
-        },
-        title: {
-            type: String,
-            required: false
-        }
-    },
-    data() {
-        return {
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            callback: (label: number) => {
-                                const fmt = Intl.NumberFormat().format;
-                                if (label < 1e3) return fmt(label);
-                                if (label >= 1e6) return fmt(label / 1e6) + "M";
-                                if (label >= 1e3) return fmt(label / 1e3) + "K";
-                            }
-                        },
-                        gridLines: {
-                            display: true
-                        },
-                        scaleLabel: {
-                            display: true,
-                            labelString: "Litros"
-                        }
-                    }],
-                    xAxes: [{
-                        ticks: {
-                            display: true
-                        },
-                        gridLines: {
-                            display: false
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Mes"
-                        }
-                    }]
-                },
-                legend: {
-                    display: true
-                },
-                title: {
-                    display: this.title !== undefined,
-                    text: this.title
-                },
-                tooltips: {
-                    callbacks: {
-                        label: (item: any, data: any) => Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index])
-                    }
-                },
-                plugins: {
-                    datalabels: {
-                        display: true,
-                        labels: {
-                            value: {
-                                font: {weight: 'bold'},
-                            }
-                        },
-                        align: 'end',
-                        formatter: (value: any, context: any) => Intl.NumberFormat().format(value)
-                    },
-                    colorschemes: {
-                        scheme: 'office.Office6'
-                    }
-                },
-                maintainAspectRatio: false
-            }
-        }
-    },
-    mounted() {
-        this.renderChart(this.chartData, this.options);
-    }
-});
 
 const CategoryTime = Vue.extend({
     name: "CategoryTime",
     components: {
         CategoryTimeChart, Loader
     },
-    mixins: [DualFilterUtil],
+    mixins: [FilterUtil],
     template,
     data() {
         return {
@@ -113,20 +30,17 @@ const CategoryTime = Vue.extend({
             chartData: {},
             title: "",
             subtitle: ""
-        }
+        };
     },
     props: {
         header: String,
-        xclass: String,
+        xclass: String
     },
     methods: {
-        requestData() {
-            this.$store.dispatch("fetchByCategory").then(this.updateChart);
-        },
-        updateChart(filters: FilterObj = {fComp: undefined, fMonth: undefined}) {
+        updateChart(filters: FilterObj = {}) {
             this.loaded = false;
-            const categories: Map<string, string> = this.$store.getters.getCategories;
-            let rawData: Record[] = this.$store.getters.getCatData;
+            const categories: Map<string, string> = this.categories;
+            let rawData: Record[] = this.rawData;
             const lastDate = rawData[rawData.length - 1].fecha;
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const lastMonth = parseInt(lastDate.split("-")[1], 10);
@@ -139,7 +53,7 @@ const CategoryTime = Vue.extend({
             const fMonth = filters.fMonth;
 
             if (!this.isEmpty(filters)) {
-                rawData = this.filterCompData(filters, rawData);
+                rawData = this.filterData(filters, rawData);
             }
 
             let maxMonth = 0;
@@ -147,25 +61,21 @@ const CategoryTime = Vue.extend({
             categories.forEach((value, key) => {
                 const vols: number[] = [];
                 months.forEach((month) => {
-                    const thisMonth = this.MONTHS[month - 1];
-                    if (fMonth !== undefined && fMonth.indexOf(thisMonth) < 0) {
+                    if (fMonth !== undefined && fMonth.indexOf(month) < 0 || rawData.length === 0) {
                         return;
                     }
-                    let fmt: string = `${lastYear}-0${month}-01`;
-                    if (month > 10) {
-                        fmt = `${lastYear}-${month}-01`;
-                    }
+                    const fmt = `${lastYear}-${month < 10 ? '0' : ''}${month}-01`;
                     const vol =  rawData.filter(item => item.categoria === key && item.fecha === fmt)
                                       .reduce((sum, item) => sum + item.volumen, 0);
                     vols.push(vol);
                     if (labels.months.length < months.length && month > maxMonth) {
-                        labels.months.push(thisMonth);
+                        labels.months.push(this.MONTHS[month - 1]);
                         maxMonth = month;
                     }
                 });
 
                 volumes.push(vols);
-            })
+            });
             this.setChartData(`Año ${lastYear}`, labels, volumes);
             this.loaded = true;
         },
@@ -174,6 +84,7 @@ const CategoryTime = Vue.extend({
             this.title = labels.categories.join(" y ");
             this.chartData = {
                 labels: labels.months,
+                aspect: this.aspect || false,
                 datasets: [{
                     label: labels.categories[0],
                     data: volumes[0],
@@ -186,7 +97,7 @@ const CategoryTime = Vue.extend({
                     lineTension: 0,
                     fill: false
                 }]
-            }
+            };
         }
     },
     mounted() {
@@ -194,4 +105,44 @@ const CategoryTime = Vue.extend({
     }
 });
 
-export default CategoryTime;
+const CategoryImportTime = Vue.extend({
+    extends: CategoryTime,
+    mixins: [WatchMonth, WatchComp],
+    computed: {
+        categories() {
+            return this.$store.getters.getCategories;
+        },
+        rawData() {
+            return this.$store.getters.getCatData;
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("fetchByCategory").then(this.updateChart);
+        }
+    }
+});
+
+
+const CategorySalesTime = Vue.extend({
+    extends: CategoryTime,
+    mixins: [WatchMonth, WatchComp, WatchDepto],
+    computed: {
+        categories() {
+            return this.$store.getters["sales/getCategories"];
+        },
+        rawData() {
+            return this.$store.getters["sales/getData"]("sales/by_category");
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "by_category").then(this.updateChart);
+        }
+    }
+});
+
+export {
+    CategoryImportTime,
+    CategorySalesTime
+};
