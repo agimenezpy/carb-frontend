@@ -6,9 +6,9 @@ import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp, WatchDepto} from 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
-            <h5>{{header}}</h5>
+            <h5 class="font-size--1">{{header}}</h5>
             <Loader v-if="!loaded"/>
-            <product-chart v-if="loaded" :chart-data="chartData" :aspect="aspect"></product-chart>
+            <product-chart v-if="loaded" :chart-data="chartData" :aspect="aspect" :styles="styles"></product-chart>
         </div>
     </div>
 </div>`;
@@ -30,11 +30,8 @@ const Product = Vue.extend({
     props: {
         header: String,
         xclass: String,
-        aspect: {
-            type: Boolean,
-            default: true,
-            required: false
-        }
+        aspect: Boolean,
+        styles: Object
     },
     methods: {
         updateChart(filters: FilterObj = {}) {

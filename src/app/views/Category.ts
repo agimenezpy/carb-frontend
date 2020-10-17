@@ -7,9 +7,9 @@ import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp } from './mixins';
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
-            <h5>{{header}} de {{title}}</h5>
+            <h5 class="font-size--1">{{header}} de {{title}}</h5>
             <Loader v-if="!loaded"/>
-            <category-chart v-if="loaded" :chart-data="chartData"></category-chart>
+            <category-chart v-if="loaded" :chart-data="chartData" :aspect="aspect"></category-chart>
         </div>
     </div>
 </div>`;
@@ -33,6 +33,7 @@ const Category = Vue.extend({
         header: String,
         type: String,
         xclass: String,
+        aspect: Boolean
     },
     methods: {
         requestData() {

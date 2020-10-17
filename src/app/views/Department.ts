@@ -7,19 +7,22 @@ const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
             <h5 class="font-size--1">{{header}}</h5>
-            <Loader v-if="!loaded"/>
+            <Loader v-if="!loaded && !error"/>
+            <div class="alert alert-red modifier-class is-active" v-if="error">
+                Error al obtener datos
+            </div>
             <company-chart v-if="loaded" :chart-data="chartData"></company-chart>
         </div>
     </div>
 </div>`;
 
 interface Labels {
-    companies: string[];
+    departaments: string[];
     categories: string[];
 }
 
-const Company = Vue.extend({
-    name: "Company",
+const Department = Vue.extend({
+    name: "Deparment",
     components: {
         CompanyChart, Loader
     },
@@ -28,7 +31,8 @@ const Company = Vue.extend({
     data() {
         return {
             loaded: false,
-            chartData: {}
+            chartData: {},
+            error: false
         };
     },
     props: {
@@ -36,15 +40,18 @@ const Company = Vue.extend({
         xclass: String
     },
     methods: {
+        onError(status: number) {
+            this.error = status > 0;
+        },
         updateChart(filters: FilterObj = {}){
             this.loaded = false;
-            const companies: Map<number, string> = this.companies;
+            const departments: Map<string, string> = this.departments;
             const category: Map<string, string> = this.categories;
             let rawData: Record[] = this.rawData;
-            const fComp = filters.fComp;
+            const fDepto = filters.fDepto;
 
             const labels: Labels = {
-                "companies": new Array<string>(),
+                "departaments": new Array<string>(),
                 "categories": Array.from(category).map(item => (item[1]))
             };
 
@@ -53,20 +60,20 @@ const Company = Vue.extend({
             }
 
             const volumes: number[][] = [];
-            companies.forEach((value, key) => {
+            departments.forEach((value, key) => {
                 const vols: number[] = [];
                 let total: number = 0;
-                if (fComp !== undefined && fComp.indexOf(key) < 0 || rawData.length === 0) {
+                if (fDepto !== undefined && fDepto.indexOf(key) < 0 || rawData.length === 0) {
                     return;
                 }
                 category.forEach((cat, catkey) => {
-                    const vol =  rawData.filter(item => item.distribuidor === key && item.categoria === catkey)
+                    const vol =  rawData.filter(item => item.departamento === key && item.categoria === catkey)
                                         .reduce((sum, item) => sum + item.volumen, 0);
                     vols.push(vol);
                     total += vol;
                 });
                 if (total > 0) {
-                    labels.companies.push(value);
+                    labels.departaments.push(value);
                     volumes.push(vols);
                 }
             });
@@ -75,7 +82,7 @@ const Company = Vue.extend({
         },
         setChartData(labels: Labels, volumes: object[]) {
             this.chartData = {
-                labels: labels.companies,
+                labels: labels.departaments,
                 datasets: [{
                     label: labels.categories[0],
                     data: volumes.map((item: any) => (item[0]))
@@ -92,36 +99,12 @@ const Company = Vue.extend({
     }
 });
 
-const CompanyImport = Vue.extend({
-    extends: Company,
-    mixins: [WatchComp, WatchMonth],
-    computed: {
-        companies() {
-            return this.$store.getters.getCompanies;
-        },
-        categories() {
-            return this.$store.getters.getComCategory;
-        },
-        rawData() {
-            return this.$store.getters.getComData;
-        }
-    },
-    methods: {
-        doFilter(filters: FilterObj, rawData: Record[]) {
-            return this.filterMonthData(filters, rawData);
-        },
-        requestData() {
-            this.$store.dispatch("fetchByCompany").then(this.updateChart);
-        }
-    }
-});
-
-const CompanySales = Vue.extend({
-    extends: Company,
+const DepartmentSales = Vue.extend({
+    extends: Department,
     mixins: [WatchComp, WatchMonth, WatchDepto],
     computed: {
-        companies() {
-            return this.$store.getters["sales/getCompanies"];
+        departments() {
+            return this.$store.getters["sales/getDepartments"];
         },
         categories() {
             return this.$store.getters["sales/getCategories"];
@@ -132,9 +115,12 @@ const CompanySales = Vue.extend({
     },
     methods: {
         requestData() {
-            this.$store.dispatch("sales/fetchByName", "by_category").then(this.updateChart);
+            this.$store.dispatch("sales/fetchByName", "by_category")
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     }
 });
 
-export { CompanyImport, CompanySales };
+
+export { DepartmentSales };

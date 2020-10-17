@@ -1,8 +1,15 @@
 import Vue from 'vue';
 import { Chart } from 'chart.js';
-import { Doughnut, Line, Bar, HorizontalBar, mixins } from 'vue-chartjs';
+import { Doughnut, Line, Bar, HorizontalBar, generateChart, mixins } from 'vue-chartjs';
+import 'chartjs-plugin-colorschemes';
+import 'chartjs-plugin-datalabels';
+import * as ChartGeo from 'chartjs-chart-geo';
 
 interface ColorSchemesType {
+    [propName: string]: any;
+}
+
+interface TopoJSONType {
     [propName: string]: any;
 }
 
@@ -10,6 +17,10 @@ class ColorSchemes {
     static getColorSchemes(): ColorSchemesType {
         return Chart["colorschemes"];
     }
+}
+
+function getTopoJSON() {
+    return ChartGeo.topojson;
 }
 
 const CategoryChart = Vue.extend({
@@ -23,7 +34,8 @@ const CategoryChart = Vue.extend({
         title: {
             type: String,
             required: false
-        }
+        },
+        aspect: Boolean
     },
     data() {
         return {
@@ -68,7 +80,7 @@ const CategoryChart = Vue.extend({
                         scheme: this.chartData.colors
                     }
                 },
-                maintainAspectRatio: true
+                maintainAspectRatio: this.aspect
             }
         };
     },
@@ -96,6 +108,7 @@ const CategoryMonthsChart = Vue.extend({
                 scales: {
                     yAxes: [{
                         ticks: {
+                            display: true,
                             beginAtZero: true,
                             callback: (label: number) => {
                                 const fmt = Intl.NumberFormat().format;
@@ -108,8 +121,7 @@ const CategoryMonthsChart = Vue.extend({
                             display: true
                         },
                         scaleLabel: {
-                            display: true,
-                            labelString: "Litros"
+                            display: true, labelString: "Litros"
                         }
                     }],
                     xAxes: [{
@@ -177,7 +189,8 @@ const CategoryTimeChart = Vue.extend({
         title: {
             type: String,
             required: false
-        }
+        },
+        amountType: String
     },
     data() {
         return {
@@ -185,6 +198,7 @@ const CategoryTimeChart = Vue.extend({
                 scales: {
                     yAxes: [{
                         ticks: {
+                            display: this.amountType === "short",
                             beginAtZero: true,
                             callback: (label: number) => {
                                 const fmt = Intl.NumberFormat().format;
@@ -213,16 +227,10 @@ const CategoryTimeChart = Vue.extend({
                         }
                     }]
                 },
-                legend: {
-                    display: true
-                },
-                title: {
-                    display: this.title !== undefined,
-                    text: this.title
-                },
+                legend: { display: true },
                 tooltips: {
                     callbacks: {
-                        label: (item: any, data: any) => Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index])
+                        label: (item: any, data: any) => (Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index]))
                     }
                 },
                 plugins: {
@@ -234,7 +242,10 @@ const CategoryTimeChart = Vue.extend({
                             }
                         },
                         align: 'end',
-                        formatter: (value: any, context: any) => Intl.NumberFormat().format(value)
+                        formatter: (value: number, context: any) => {
+                            const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
+                            return (this.amountType === "short") ? fmt(value / 1e6) : fmt(value);
+                        }
                     },
                     colorschemes: {
                         scheme: 'office.Office6'
@@ -420,11 +431,7 @@ const ProductChart = Vue.extend({
             type: String,
             required: false
         },
-        aspect: {
-            type: Boolean,
-            required: false,
-            default: true
-        }
+        aspect: Boolean
     },
     data() {
         return {
@@ -432,7 +439,8 @@ const ProductChart = Vue.extend({
                 scales: {
                     yAxes: [{
                         ticks: {
-                            beginAtZero: true,
+                            display: false,
+                            beginAtZero: false,
                             callback: (label: number) => {
                                 const fmt = Intl.NumberFormat().format;
                                 if (label < 1e3) return fmt(label);
@@ -444,8 +452,7 @@ const ProductChart = Vue.extend({
                             display: true
                         },
                         scaleLabel: {
-                            display: true,
-                            labelString: "Litros"
+                            display: true, labelString: "Litros"
                         }
                     }],
                     xAxes: [{
@@ -497,7 +504,141 @@ const ProductChart = Vue.extend({
     }
 });
 
+const StationChart = Vue.extend({
+    extends: Bar,
+    mixins: [ mixins.reactiveProp ],
+    props: {
+        chartData: {
+            type: Object,
+            required: false
+        },
+        title: String,
+        aspect: Boolean
+    },
+    data() {
+        return {
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            display: false,
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            display: true
+                        },
+                        scaleLabel: {
+                            display: true, labelString: "Estaciones"
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            display: true,
+                            fontSize: 8,
+                            maxRotation: 90,
+                            minRotation: 90
+                        },
+                        gridLines: {
+                            display: false
+                        },
+                        scaleLabel: {
+                            display: false, labelString: this.title
+                        }
+                    }]
+                },
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: this.title !== undefined,
+                    text: this.title
+                },
+                tooltips: {
+                    callbacks: {
+                        label: (item: any) => Intl.NumberFormat().format(item.yLabel)
+                    }
+                },
+                plugins: {
+                    datalabels: {
+                        display: true,
+                        color: "#444444",
+                        labels: {
+                            value: {
+                                font: {weight: 'bold'},
+                            }
+                        },
+                        rotation: 0,
+                        clamp: false,
+                        anchor: 'end',
+                        formatter: (value: number) => Intl.NumberFormat().format(value)
+                    },
+                    colorschemes: {
+                        scheme: this.chartData.colors
+                    }
+                },
+                maintainAspectRatio: this.aspect
+            }
+        };
+    },
+    mounted() {
+        this.renderChart(this.chartData, this.options);
+    }
+});
+
+const GeoMapChart = Vue.extend({
+    extends: generateChart("choropleth", "choropleth"),
+    mixins: [ mixins.reactiveProp ],
+    props: {
+        chartData: {
+            type: Object,
+            required: false
+        },
+        title: String,
+        aspect: Boolean
+    },
+    data() {
+        return {
+            options: {
+                showOutline: false,
+                showGraticule: false,
+                legend: {
+                  display: false,
+                },
+                scale: {
+                  projection: 'naturalEarth1',
+                },
+                geo: {
+                    colorScale: {
+                        display: true,
+                        position: 'top',
+                        quantize: 5,
+                        legend: {
+                            position: 'top-right',
+                        }
+                    }
+                },
+                plugins: {
+                    datalabels: {
+                        align: 'top',
+                        formatter: (item: any) => {
+                            return `${item.value}`;
+                        }
+                    },
+                    colorschemes: {
+                        scheme: ''
+                    }
+                },
+                maintainAspectRatio: this.aspect
+            }
+        };
+    },
+    mounted() {
+        this.renderChart(this.chartData, this.options);
+    }
+});
+
 export {
-    ColorSchemes, CategoryChart, CategoryMonthsChart,
-    CategoryTimeChart, CategoryYearsChart, CompanyChart, ProductChart
+    ColorSchemes, CategoryChart, CategoryMonthsChart, StationChart,
+    CategoryTimeChart, CategoryYearsChart, CompanyChart, ProductChart,
+    getTopoJSON, TopoJSONType, GeoMapChart
 };

@@ -14,6 +14,17 @@ interface State {
     requests: Map<string, object>;
 }
 
+function cleanNames(item: string): any {
+    let result = item;
+    const regex = / (PARAGUAY|SACIA|SAECA|SAE|SRL|SA)/gi;
+    result = result.replace(regex, "")
+                   .replace(/.* \(([A-Za-z ]+)\)/gi, "\$1")
+                   .replace(/([A-Za-z]+)CARBUROS DEL ([A-Za-z]+)/gi, "\$1\$2")
+                   .replace(/COMBUSTIBLES ([A-Za-z]+) .*/gi, "\$1")
+                   .replace("DISTRIBUIDOR", "");
+    return result;
+}
+
 const SalesStore = {
     namespaced: true,
     state: {
@@ -40,16 +51,22 @@ const SalesStore = {
             ));
         },
         setDepartments(state: State, states: object) {
-            state.departamento = new Map();
-            Object.keys(states).forEach(key => (
-                state.departamento.set(key, states[key])
-            ));
+            const original = new Map();
+            Object.keys(states).map((key: string) => (original.set(key, states[key])));
+            state.departamento = new Map(
+                Array.from(
+                    original.entries()
+                ).sort((a, b) => (a[1] > b[1]) ? 1 : -1)
+            );
         },
         setCompanies(state: State, company: object) {
-            state.distribuidor = new Map();
-            Object.keys(company).forEach(key => (
-                state.distribuidor.set(parseInt(key, 10), company[key])
-            ));
+            const original = new Map();
+            Object.keys(company).map((key: string) => (original.set(parseInt(key, 10), cleanNames(company[key]))));
+            state.distribuidor = new Map(
+                Array.from(
+                    original.entries()
+                ).sort((a, b) => (a[1] > b[1]) ? 1 : -1)
+            );
         }
     },
     getters: {
@@ -95,7 +112,32 @@ const SalesStore = {
                     if (response.data.distribuidor !== undefined) {
                         context.commit("setCompanies", response.data.distribuidor);
                     }
-                    resolve(response.status);
+                    resolve();
+                    context.state.requests.delete(api);
+                })
+                .catch((error) => {
+                    reject((error.response !== undefined) ? error.response.status : 500);
+                    context.state.requests.delete(api);
+                });
+            });
+            requests.set(api, req);
+            return req;
+        },
+        fetchGeoData(context: any, api: string): any {
+            const requests = context.state.requests;
+            if (requests.has(api)) {
+                return requests.get(api);
+            }
+            const req = new Promise((resolve, reject) => {
+                axios.get(api)
+                .then((response) => {
+                    if (response.data !== undefined) {
+                        context.commit("setData", {
+                            api,
+                            data: response.data
+                        });
+                    }
+                    resolve();
                     context.state.requests.delete(api);
                 })
                 .catch((error) => {

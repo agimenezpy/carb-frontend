@@ -6,12 +6,12 @@ import { FilterUtil, FilterObj, Record, WatchMonth } from './mixins';
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
-            <h5>{{header}} de {{title}}</h5>
+            <h5 class="font-size--1">{{header}} para {{title}}</h5>
             <Loader v-if="!loaded && !error"/>
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
             </div>
-            <category-months-chart v-if="loaded" :chart-data="chartData"></category-months-chart>
+            <category-months-chart v-if="loaded" :chart-data="chartData" :styles="styles"></category-months-chart>
         </div>
     </div>
 </div>`;
@@ -39,6 +39,7 @@ const CategoryMonths = Vue.extend({
         header: String,
         type: String,
         xclass: String,
+        styles: Object
     },
     methods: {
         onError(status: number) {

@@ -6,7 +6,7 @@ import { FilterUtil, Record, WatchMonth } from './mixins';
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
-            <h5>{{header}} de {{title}}</h5>
+            <h5 class="font-size--1">{{header}} de {{title}}</h5>
             <Loader v-if="!loaded"/>
             <category-years-chart v-if="loaded" :chart-data="chartData"></category-years-chart>
         </div>

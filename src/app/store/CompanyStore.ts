@@ -7,6 +7,17 @@ interface State {
     data: object[];
 }
 
+function cleanNames(item: string): any {
+    let result = item;
+    const regex = / (PARAGUAY|SACIA|SAECA|SAE|SRL|SA)/gi;
+    result = result.replace(regex, "")
+                   .replace(/.* \(([A-Za-z ]+)\)/gi, "\$1")
+                   .replace(/([A-Za-z]+)CARBUROS DEL ([A-Za-z]+)/gi, "\$1\$2")
+                   .replace(/COMBUSTIBLES ([A-Za-z]+) .*/gi, "\$1")
+                   .replace("DISTRIBUIDOR", "");
+    return result;
+}
+
 const CompanyStore = {
     state: {
         status: "NONE",
@@ -24,7 +35,7 @@ const CompanyStore = {
         setCompanies(state: State, companies: object) {
             state.company = new Map();
             Object.keys(companies).forEach((key: string) => (
-                state.company.set(parseInt(key, 10), companies[key])
+                state.company.set(parseInt(key, 10), cleanNames(companies[key]))
             ));
         },
         setComCategory(state: State, categories: object) {

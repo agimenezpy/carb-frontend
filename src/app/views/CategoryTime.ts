@@ -6,9 +6,9 @@ import Loader from './Loader';
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
-            <h5>{{header}} de {{title}}</h5>
+            <h5 class="font-size--1">{{header}} del {{title}}</h5>
             <Loader v-if="!loaded"/>
-            <category-time-chart v-if="loaded" :chart-data="chartData" :title="subtitle"></category-time-chart>
+            <category-time-chart v-if="loaded" :chart-data="chartData" :styles="styles" :amountType="amountType"></category-time-chart>
         </div>
     </div>
 </div>`;
@@ -29,12 +29,13 @@ const CategoryTime = Vue.extend({
             loaded: false,
             chartData: {},
             title: "",
-            subtitle: ""
+            amountType: ""
         };
     },
     props: {
         header: String,
-        xclass: String
+        xclass: String,
+        styles: Object
     },
     methods: {
         updateChart(filters: FilterObj = {}) {
@@ -80,8 +81,7 @@ const CategoryTime = Vue.extend({
             this.loaded = true;
         },
         setChartData(title: string, labels: Labels, volumes: object[]) {
-            this.subtitle = title;
-            this.title = labels.categories.join(" y ");
+            this.title = title;
             this.chartData = {
                 labels: labels.months,
                 aspect: this.aspect || false,
@@ -127,6 +127,9 @@ const CategoryImportTime = Vue.extend({
 const CategorySalesTime = Vue.extend({
     extends: CategoryTime,
     mixins: [WatchMonth, WatchComp, WatchDepto],
+    data() {
+        return {amountType: "short"};
+    },
     computed: {
         categories() {
             return this.$store.getters["sales/getCategories"];

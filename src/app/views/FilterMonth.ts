@@ -2,21 +2,22 @@ import Vue from 'vue';
 import {mapState} from 'vuex';
 
 const template = `<div class="">
-    <h4 class="side-nav-title" >
-        <div class="column-3 font-size--3">Filtro por mes</div>
-        <div class="text-right">
-        <a title="Filtrar" role="button" class="icon-ui-checkbox-checked link-off-black" :class="{'icon-ui-checkbox-unchecked': filtered, 'icon-ui-gray': !show}" v-on:click="checkEvent"></a>
-        <a title="Mostrar/Ocultar" role="button" class="icon-ui-down link-off-black" :class="{'icon-ui-up': show}" @click="show = !show"></a>
+    <div class="side-nav-title font-size--3" >
+        Mes
+        <div class="right">
+            <a title="Filtrar" role="button" class="icon-ui-checkbox-checked link-off-black" :class="{'icon-ui-checkbox-unchecked': filtered, 'icon-ui-gray': !show}" v-on:click="checkEvent"></a>
+            <a title="Mostrar/Ocultar" role="button" class="icon-ui-down link-off-black" :class="{'icon-ui-up': show}" @click="show = !show"></a>
         </div>
-    </h4>
+    </div>
     <transition name="fade">
-        <nav role="navigation" aria-labelledby="sidenav" v-if="show">
-        <fieldset class="fieldset-checkbox">
+        <fieldset class="fieldset-checkbox" v-if="show">
             <template v-for="(mes, idx) in meses">
-                <span class="side-nav-link font-size--6"><input type="checkbox" name="meses" :value="idx+1" v-model="checked" @change="checkMonth">{{mes}}</span>
+                <label class="side-nav-link">
+                    <input type="checkbox" name="meses" :value="idx+1" v-model="checked" @change="checkMonth">
+                    <span class="font-size--3">{{mes}}</span>
+                </label>
             </template>
         </fieldset>
-        </nav>
     </transition>
 </div>`;
 

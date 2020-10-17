@@ -20,9 +20,9 @@ const template = `
     <div class="column-18 pos-1">
         <h2 class="text-rule">Importación de combustibles</h2>
         <div class="column-18 leader-1">
-            <ProductImport header="Importación por Productos" xclass="column-6"/>
-            <Category type="GL" header="Porcentaje" xclass="column-6"/>
-            <Category type="GA" header="Porcentaje"  xclass="column-6"/>
+            <ProductImport header="Importación por Productos" :aspect="true" xclass="column-6"/>
+            <Category type="GL" header="Porcentaje" :aspect="true" xclass="column-6"/>
+            <Category type="GA" header="Porcentaje" :aspect="true" xclass="column-6"/>
         </div>
         <div class="column-18 leader-1">
             <CompanyImport header="Importación por Empresas" xclass="column-6"/>

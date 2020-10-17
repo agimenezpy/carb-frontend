@@ -49,13 +49,15 @@
   },
   "dependencies": {
     "axios": "^0.20.0",
+    "calcite-web": "github:Esri/calcite-web#v1.2.5",
     "chart.js": "^2.9.3",
-    "chartjs-plugin-datalabels": "^0.7.0",
+    "chartjs-chart-geo": "^2.1.0",
     "chartjs-plugin-colorschemes": "^0.4.0",
+    "chartjs-plugin-datalabels": "^0.7.0",
+    "topojson": "^3.0.2",
     "vue": "^2.6.12",
-    "vue-router": "^3.4.5",
-    "vuex": "^3.5.1",
     "vue-chartjs": "^3.5.1",
-    "calcite-web": "github:Esri/calcite-web#v1.2.5"
+    "vue-router": "^3.4.5",
+    "vuex": "^3.5.1"
   }
 }
