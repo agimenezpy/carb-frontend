@@ -6,7 +6,7 @@ import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp, WatchDepto} from 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
-            <h5 class="font-size--1">{{header}}</h5>
+            <div class="font-size--3">{{header}}</div>
             <Loader v-if="!loaded"/>
             <product-chart v-if="loaded" :chart-data="chartData" :aspect="aspect" :styles="styles"></product-chart>
         </div>
@@ -51,7 +51,11 @@ const Product = Vue.extend({
 
                 const vol = qs.reduce((sum, item) => sum + item.volumen, 0);
                 if (vol > 0) {
-                    labels.push(value);
+                    labels.push(
+                        value.replace("SIN ", "S/")
+                             .replace("CON ", "C/")
+                             .replace("ALCOHOL", "A")
+                    );
                     volumes.push(vol);
                 }
             });

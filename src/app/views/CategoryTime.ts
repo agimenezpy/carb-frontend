@@ -6,7 +6,7 @@ import Loader from './Loader';
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
-            <h5 class="font-size--1">{{header}} del {{title}}</h5>
+            <div class="font-size--3">{{header.replace("$year", title)}}</div>
             <Loader v-if="!loaded"/>
             <category-time-chart v-if="loaded" :chart-data="chartData" :styles="styles" :amountType="amountType"></category-time-chart>
         </div>
@@ -77,7 +77,7 @@ const CategoryTime = Vue.extend({
 
                 volumes.push(vols);
             });
-            this.setChartData(`Año ${lastYear}`, labels, volumes);
+            this.setChartData(`${lastYear}`, labels, volumes);
             this.loaded = true;
         },
         setChartData(title: string, labels: Labels, volumes: object[]) {
@@ -113,12 +113,12 @@ const CategoryImportTime = Vue.extend({
             return this.$store.getters.getCategories;
         },
         rawData() {
-            return this.$store.getters.getCatData;
+            return this.$store.getters.getComData;
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByCategory").then(this.updateChart);
+            this.$store.dispatch("fetchByCompany").then(this.updateChart);
         }
     }
 });

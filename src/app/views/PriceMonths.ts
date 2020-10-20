@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Loader from './Loader';
-import { CategoryMonthsChart  } from './Charts';
+import { PriceMonthsChart  } from './Charts';
 import { FilterUtil, FilterObj, Record, WatchMonth } from './mixins';
 
 const template = `<div :class="[xclass]">
@@ -11,7 +11,7 @@ const template = `<div :class="[xclass]">
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
             </div>
-            <category-months-chart v-if="loaded" :chart-data="chartData" :styles="styles"></category-months-chart>
+            <price-months-chart v-if="loaded" :chart-data="chartData" :styles="styles"></price-months-chart>
         </div>
     </div>
 </div>`;
@@ -20,10 +20,10 @@ interface Labels {
     [propName: string]: any;
 }
 
-const CategoryMonths = Vue.extend({
-    name: "CategoryMonths",
+const PriceMonths = Vue.extend({
+    name: "PriceMonths",
     components: {
-        CategoryMonthsChart, Loader
+        PriceMonthsChart, Loader
     },
     mixins: [FilterUtil, WatchMonth],
     template,
@@ -48,7 +48,7 @@ const CategoryMonths = Vue.extend({
         },
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
-            const categories: Map<string, string> = this.categories;
+            const products: Map<string, string> = this.products;
             const rawData: Record[][] = this.rawData;
 
             const lastDate = rawData[1][rawData[1].length - 1].fecha;
@@ -57,7 +57,7 @@ const CategoryMonths = Vue.extend({
             const months: number[] = Array.from(Array(lastMonth + 1).keys()).slice(1);
             const years = [lastYear - 1, lastYear];
             const volumes: object[] = [];
-            const title = categories.get(this.type);
+            this.title = products.get(this.type);
             const labels: Labels = {
                 "months": months.map((item) => this.MONTHS[item - 1]),
                 "years": years
@@ -74,7 +74,7 @@ const CategoryMonths = Vue.extend({
                         return;
                     }
                     const fmt = `${value}-${month < 10 ? '0' : ''}${month}-01`;
-                    const vol =  rawData[idx].filter(item => item.categoria === this.type && item.fecha === fmt)
+                    const vol =  rawData[idx].filter(item => item.producto === this.type && item.fecha === fmt)
                                            .reduce((sum, item) => sum + item.volumen, 0);
                     vols.push(vol);
 
@@ -82,13 +82,12 @@ const CategoryMonths = Vue.extend({
 
                 volumes.push(vols);
             });
-            this.setChartData(`${title} ${lastYear - 1} vs ${lastYear}`, labels, volumes);
+            this.setChartData(labels, volumes);
             this.loaded = true;
         },
-        setChartData(title: string, labels: Labels, volumes: object[]) {
-            this.title = title;
+        setChartData(labels: Labels, volumes: object[]) {
             this.chartData = {
-                colors: title.startsWith("GASOIL") ? 'office.Blue6' : 'office.Orange6',
+                colors: this.title.startsWith("GASOIL") ? 'office.Blue6' : 'office.Orange6',
                 labels: labels.months,
                 datasets: [{
                     label: labels.years[0],
@@ -110,59 +109,31 @@ const CategoryMonths = Vue.extend({
     }
 });
 
-const CategoryImportMonths = Vue.extend({
-    extends: CategoryMonths,
+const PriceImportMonths = Vue.extend({
+    extends: PriceMonths,
     data() {
         return {
             year: 2020
         };
     },
     computed: {
-        categories() {
-            return this.$store.getters.getMCategories;
+        products() {
+            return this.$store.getters.getPriProducts;
         },
         rawData() {
             return [
-                this.$store.getters.getMDataY1,
-                this.$store.getters.getMDataY2
+                this.$store.getters.getPriDataY1,
+                this.$store.getters.getPriDataY2
             ];
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByMonth", this.year).then(this.updateChart).catch(this.onError);
-        }
-    }
-});
-
-const CategorySalesMonths = Vue.extend({
-    extends: CategoryMonths,
-    data() {
-        return {
-            year: 2020
-        };
-    },
-    computed: {
-        categories() {
-            return this.$store.getters["sales/getCategories"];
-        },
-        rawData() {
-            return [
-                this.$store.getters["sales/getData"](`sales/by_month/${this.year - 1}`),
-                this.$store.getters["sales/getData"](`sales/by_month/${this.year}`)
-            ];
-        }
-    },
-    methods: {
-        requestData() {
-            this.$store.dispatch("sales/fetchByName", `by_month/${this.year}`).then(() => {
-                this.$store.dispatch("sales/fetchByName", `by_month/${this.year - 1}`)
-                            .then(this.updateChart)
-                            .catch(this.onError);
-            }).catch(this.onError);
+            this.$store.dispatch("fetchByPrice", this.year).then(this.updateChart).catch(this.onError);
         }
     }
 });
 
 
-export { CategoryImportMonths, CategorySalesMonths };
+
+export { PriceImportMonths };

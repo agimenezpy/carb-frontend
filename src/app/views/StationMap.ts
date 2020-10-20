@@ -6,7 +6,7 @@ import { FilterUtil, FilterObj, Record, WatchComp} from './mixins';
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
-            <h5 class="font-size--1">Mapa de Departamentos</h5>
+            <div class="font-size--3">{{header}}</div>
             <Loader v-if="!loaded"/>
             <geo-map-chart v-if="loaded" :chart-data="chartData" :aspect="aspect" :styles="styles"></geo-map-chart>
         </div>
@@ -49,9 +49,9 @@ const StationMap = Vue.extend({
             }
 
             departments.map((feature) => {
-                const vol = rawData.filter((item: Record) => item.departamento === feature.properties.dpto)
+                const vol = rawData.filter((item: Record) => item.departamento === feature.properties.codigo)
                                    .reduce((sum, item) => sum + item.cantidad, 0);
-                labels.push(feature.properties.dpto_desc);
+                labels.push(feature.properties.nombre);
                 volumes.push(vol);
             });
             this.setChartData(labels, volumes);

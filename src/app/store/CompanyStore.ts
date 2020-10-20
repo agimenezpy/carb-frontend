@@ -5,6 +5,7 @@ interface State {
     company: Map<number, string>;
     category: Map<string, string>;
     data: object[];
+    request: object;
 }
 
 function cleanNames(item: string): any {
@@ -23,7 +24,8 @@ const CompanyStore = {
         status: "NONE",
         company: new Map(),
         category: new Map(),
-        data: []
+        data: [],
+        request: {}
     },
     mutations: {
         setComStatus(state: State, status: string) {
@@ -38,7 +40,7 @@ const CompanyStore = {
                 state.company.set(parseInt(key, 10), cleanNames(companies[key]))
             ));
         },
-        setComCategory(state: State, categories: object) {
+        setCategories(state: State, categories: object) {
             state.category = new Map();
             Object.keys(categories).forEach(key => (
                 state.category.set(key, categories[key])
@@ -52,24 +54,30 @@ const CompanyStore = {
         getComData: (state: State): object[] =>  {
             return state.data;
         },
-        getComCategory: (state: State): Map<string, string> =>  {
+        getCategories: (state: State): Map<string, string> =>  {
             return state.category;
         }
     },
     actions: {
         fetchByCompany(context: any): any {
-            context.commit("setComStatus", "PENDING");
-            const request = axios.get('/api/import/by_company')
-            .then(response => {
-                context.commit("setComStatus", "DONE");
-                context.commit("setComData", response.data.data);
-                context.commit("setCompanies", response.data.distribuidor);
-                context.commit("setComCategory", response.data.categoria);
-            })
-            .catch(errors => {
-                context.commit("setComStatus", "ERROR");
-            });
-            return request;
+            if (context.state.status !== "PENDING") {
+                context.commit("setComStatus", "PENDING");
+                context.state.request = new Promise((resolve, reject) => {
+                     axios.get('/api/import/by_company')
+                    .then(response => {
+                        context.commit("setComStatus", "DONE");
+                        context.commit("setComData", response.data.data);
+                        context.commit("setCompanies", response.data.distribuidor);
+                        context.commit("setCategories", response.data.categoria);
+                        resolve();
+                    })
+                    .catch(error => {
+                        context.commit("setComStatus", "ERROR");
+                        reject((error.response !== undefined) ? error.response.status : 500);
+                    });
+                });
+            }
+            return context.state.request;
         }
     }
 };

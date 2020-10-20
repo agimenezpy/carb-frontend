@@ -6,7 +6,7 @@ import { FilterUtil, FilterObj, Record, WatchComp, WatchMonth, WatchDepto } from
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
-            <h5 class="font-size--1">{{header}}</h5>
+            <div class="font-size--3">{{header}}</div>
             <Loader v-if="!loaded && !error"/>
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
@@ -59,7 +59,7 @@ const Department = Vue.extend({
                 rawData = this.filterData(filters, rawData);
             }
 
-            const volumes: number[][] = [];
+            let dataset: object[] = [];
             departments.forEach((value, key) => {
                 const vols: number[] = [];
                 let total: number = 0;
@@ -73,10 +73,12 @@ const Department = Vue.extend({
                     total += vol;
                 });
                 if (total > 0) {
-                    labels.departaments.push(value);
-                    volumes.push(vols);
+                    dataset.push([value, vols, total]);
                 }
             });
+            dataset = dataset.sort((a, b) => a[2] < b[2] ? 1 : (a[2] === b[2]) ? 0 : -1);
+            labels.departaments = dataset.map((item) => (item[0]));
+            const volumes: number[][] = dataset.map((item) => (item[1]));
             this.setChartData(labels, volumes);
             this.loaded = true;
         },

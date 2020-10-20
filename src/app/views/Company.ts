@@ -6,9 +6,9 @@ import { FilterUtil, FilterObj, Record, WatchComp, WatchMonth, WatchDepto } from
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
-            <h5 class="font-size--1">{{header}}</h5>
+            <span class="font-size--3">{{header}}</span>
             <Loader v-if="!loaded"/>
-            <company-chart v-if="loaded" :chart-data="chartData"></company-chart>
+            <company-chart v-if="loaded" :chart-data="chartData" :styles="styles"></company-chart>
         </div>
     </div>
 </div>`;
@@ -33,7 +33,8 @@ const Company = Vue.extend({
     },
     props: {
         header: String,
-        xclass: String
+        xclass: String,
+        styles: Object
     },
     methods: {
         updateChart(filters: FilterObj = {}){
@@ -52,7 +53,7 @@ const Company = Vue.extend({
                 rawData = this.filterData(filters, rawData);
             }
 
-            const volumes: number[][] = [];
+            let dataset: object[] = [];
             companies.forEach((value, key) => {
                 const vols: number[] = [];
                 let total: number = 0;
@@ -66,10 +67,12 @@ const Company = Vue.extend({
                     total += vol;
                 });
                 if (total > 0) {
-                    labels.companies.push(value);
-                    volumes.push(vols);
+                    dataset.push([value, vols, total]);
                 }
             });
+            dataset = dataset.sort((a, b) => a[2] < b[2] ? 1 : (a[2] === b[2]) ? 0 : -1);
+            labels.companies = dataset.map((item) => (item[0]));
+            const volumes: number[][] = dataset.map((item) => (item[1]));
             this.setChartData(labels, volumes);
             this.loaded = true;
         },
@@ -100,7 +103,7 @@ const CompanyImport = Vue.extend({
             return this.$store.getters.getCompanies;
         },
         categories() {
-            return this.$store.getters.getComCategory;
+            return this.$store.getters.getCategories;
         },
         rawData() {
             return this.$store.getters.getComData;

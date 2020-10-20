@@ -7,9 +7,9 @@ import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp } from './mixins';
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
-            <h5 class="font-size--1">{{header}} de {{title}}</h5>
+            <div class="font-size--3">{{header.replace("$title", title)}}</div>
             <Loader v-if="!loaded"/>
-            <category-chart v-if="loaded" :chart-data="chartData" :aspect="aspect"></category-chart>
+            <category-chart v-if="loaded" :chart-data="chartData" :title="title" :aspect="aspect" :styles="styles"></category-chart>
         </div>
     </div>
 </div>`;
@@ -33,16 +33,17 @@ const Category = Vue.extend({
         header: String,
         type: String,
         xclass: String,
-        aspect: Boolean
+        aspect: Boolean,
+        styles: Object
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByCategory").then(this.updateChart);
+            this.$store.dispatch("fetchByCompany").then(this.updateChart);
         },
         updateChart(filters: FilterObj = {fComp: undefined, fMonth: undefined}) {
             this.loaded = false;
             const categories: Map<string, string> = this.$store.getters.getCategories;
-            let rawData: Record[] = this.$store.getters.getCatData;
+            let rawData: Record[] = this.$store.getters.getComData;
 
             const labels: string[] = [];
             const volumes: number[] = [];

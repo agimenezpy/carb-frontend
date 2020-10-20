@@ -4,12 +4,9 @@ import Loader from './Loader';
 import { FilterUtil, FilterObj, Record, WatchComp, WatchDepto} from './mixins';
 
 const template = `<div :class="[xclass]">
-    <div class="card">
-        <div class="card-content">
-            <p class='font-size--2'>{{header}}</p>
+            <span class='font-size--3'>EESS y PCP por {{header}}</span>
             <Loader v-if="!loaded"/>
             <station-chart v-if="loaded" :chart-data="chartData" :aspect="aspect" :styles="styles"></station-chart>
-        </div>
     </div>
 </div>`;
 

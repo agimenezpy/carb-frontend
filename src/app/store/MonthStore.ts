@@ -12,7 +12,7 @@ const MonthStore = {
     state: {
         status: "NONE",
         category: new Map(),
-        data: new Map(),
+        data: {},
         request: {}
     },
     mutations: {
@@ -44,9 +44,8 @@ const MonthStore = {
         }
     },
     actions: {
-        fetchByMonth(context: any) {
+        fetchByMonth(context: any, year: number) {
             if (context.state.status !== "PENDING") {
-                const year = 2020; // (new Date()).getFullYear();
                 context.commit("setMStatus", "PENDING");
                 const ylast = axios.get(`/api/import/by_month/${year - 1}`);
                 const yprev = axios.get(`/api/import/by_month/${year}`);
