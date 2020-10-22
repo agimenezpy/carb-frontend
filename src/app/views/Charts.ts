@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import { Chart } from 'chart.js';
-import { Doughnut, Line, Bar, HorizontalBar, generateChart, mixins } from 'vue-chartjs';
+import { Pie, Doughnut, Line, Bar, HorizontalBar, generateChart, mixins } from 'vue-chartjs';
 import 'chartjs-plugin-colorschemes';
 import 'chartjs-plugin-datalabels';
 import * as ChartGeo from 'chartjs-chart-geo';
@@ -108,7 +108,7 @@ const CategoryMonthsChart = Vue.extend({
                 scales: {
                     yAxes: [{
                         ticks: {
-                            display: true,
+                            display: false,
                             beginAtZero: true,
                             callback: (label: number) => {
                                 const fmt = Intl.NumberFormat().format;
@@ -145,12 +145,15 @@ const CategoryMonthsChart = Vue.extend({
                 },
                 tooltips: {
                     callbacks: {
-                        label: (item: any, data: any) => Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index])
+                        label: (item: any, data: any) => {
+                            const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
+                            return fmt(data.datasets[item.datasetIndex].data[item.index] / 1e6);
+                        }
                     }
                 },
                 plugins: {
                     datalabels: {
-                        display: true,
+                        display: false,
                         labels: {
                             value: {
                                 font: {weight: 'bold'},
@@ -200,7 +203,7 @@ const CategoryTimeChart = Vue.extend({
                 scales: {
                     yAxes: [{
                         ticks: {
-                            display: this.amountType === "short",
+                            display: false, // this.amountType === "short",
                             beginAtZero: true,
                             callback: (label: number) => {
                                 const fmt = Intl.NumberFormat().format;
@@ -231,12 +234,16 @@ const CategoryTimeChart = Vue.extend({
                 legend: { display: true },
                 tooltips: {
                     callbacks: {
-                        label: (item: any, data: any) => (Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index]))
+                        label: (item: any, data: any) => { 
+                            const value = data.datasets[item.datasetIndex].data[item.index];
+                            const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
+                            return (this.amountType === "short") ? fmt(value / 1e6) : fmt(value);
+                        }
                     }
                 },
                 plugins: {
                     datalabels: {
-                        display: true,
+                        display: false,
                         labels: {
                             value: {
                                 font: {weight: 'bold'},
@@ -696,7 +703,7 @@ const PriceMonthsChart = Vue.extend({
                             display: true
                         },
                         scaleLabel: {
-                            display: true, labelString: "Dolares"
+                            display: false, labelString: "Dolares"
                         }
                     }],
                     xAxes: [{
@@ -729,7 +736,7 @@ const PriceMonthsChart = Vue.extend({
                 },
                 plugins: {
                     datalabels: {
-                        display: true,
+                        display: false,
                         labels: {
                             value: {
                                 font: {weight: 'bold'},
@@ -759,10 +766,88 @@ const PriceMonthsChart = Vue.extend({
     }
 });
 
+const CountryChart = Vue.extend({
+    extends: Pie,
+    mixins: [ mixins.reactiveProp ],
+    props: {
+        chartData: {
+            type: Object,
+            required: false
+        },
+        title: {
+            type: String,
+            required: false
+        },
+        aspect: Boolean
+    },
+    data() {
+        return {
+            options: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: false,
+                    text: this.title
+                },
+                tooltips: {
+                    callbacks: {
+                        label: (item: any, data: any) => {
+                            const value = Intl.NumberFormat().format(data.datasets[item.datasetIndex].data[item.index]);
+                            return `${data.labels[item.index]}:${value}`;
+                        }
+                    }
+                },
+                rotation: 1 * 0.2 * Math.PI,
+                plugins: {
+                    datalabels: {
+                        formatter: (value: any, context: any) => {
+                            const dataset = context.chart.data.datasets[0];
+                            const total = dataset.data.reduce((prevValue: number, curValue: number) => prevValue + curValue);
+                            const percentage = Math.round((value / total) * 100);
+                            const label = context.chart.data.labels[context.dataIndex];
+                            return `${label}\n${percentage}%`;
+                        },
+                        color: "#444444",
+                        anchor: "end",
+                        align(item: any) {
+                            const codigo =  item.chart.data.labels[item.dataIndex];
+                            if (codigo === "OTROS") {
+                                return "bottom";
+                            }
+                            else if (codigo === "ARGENTINA") {
+                                return "left";
+                            }
+                            else {
+                                return "right";
+                            }
+                        },
+                        textAlign: "center",
+                        labels: {
+                            value: {
+                                font: {
+                                    weight: 'bold',
+                                    size: '11'
+                                }
+                            }
+                        }
+                    },
+                    colorschemes: {
+                        scheme: this.chartData.colors
+                    }
+                },
+                maintainAspectRatio: this.aspect
+            }
+        };
+    },
+    mounted() {
+        this.renderChart(this.chartData, this.options);
+    }
+});
 
 
 export {
     ColorSchemes, CategoryChart, CategoryMonthsChart, StationChart,
     CategoryTimeChart, CategoryYearsChart, CompanyChart, ProductChart,
-    getTopoJSON, TopoJSONType, GeoMapChart, PriceMonthsChart
+    getTopoJSON, TopoJSONType, GeoMapChart, PriceMonthsChart, CountryChart
 };

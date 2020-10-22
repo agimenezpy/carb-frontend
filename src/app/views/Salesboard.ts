@@ -6,6 +6,7 @@ import { CompanySales } from './Company';
 import { DepartmentSales } from './Department';
 import { StationCompany, StationDepartment } from './Station';
 import { StationMap } from './StationMap';
+import SalesPrice from './SalesPrice';
 import FilterMonth from './FilterMonth';
 import FilterCompany from './FilterCompany';
 import FilterDepartment from './FilterDepartment';
@@ -44,6 +45,7 @@ const template = `
             <CategorySalesMonths header="Venta de $title (millones de litros)" type="GA" xclass="column-10" :styles="{height: '240px'}"/>
         </div>
         <div class="column-20 leader-1">
+        <SalesPrice header="Precio de Venta al Público" xclass="column-20" />
         </div>
     </div>
 </div>`;
@@ -52,7 +54,7 @@ const Salesboard = Vue.extend({
     name: "Salesboard",
     components: {
         ProductSales, CategorySalesTime, CategorySalesMonths, CompanySales, DepartmentSales,
-        FilterMonth, FilterCompany, FilterDepartment, StationCompany, StationDepartment, StationMap
+        FilterMonth, FilterCompany, FilterDepartment, StationCompany, StationDepartment, StationMap, SalesPrice
     },
     template,
     mounted() {

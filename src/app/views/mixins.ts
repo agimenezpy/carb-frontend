@@ -47,7 +47,7 @@ const FilterUtil = {
         },
         filterCompData(filters: FilterObj, rawData: Record[]) {
             const fComp = filters.fComp;
-            return rawData.filter(item => ((fComp !== undefined) ? fComp.indexOf(item.distribuidor) >= 0 : true));
+            return rawData.filter(item => ((fComp !== undefined) ? fComp.indexOf(item.distribuidor === 2 ? 16 : item.distribuidor) >= 0 : true));
         },
         filterMonthData(filters: FilterObj, rawData: Record[]) {
             const fMonth = filters.fMonth;

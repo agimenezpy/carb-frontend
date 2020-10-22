@@ -36,22 +36,27 @@ const Station = Vue.extend({
             const grouping: Map<string, string> = this.grouping;
             let rawData: Record[] = this.rawData;
 
-            let dataset: object[][] = [];
-
             if (!this.isEmpty(filters)) {
                 rawData = this.doFilter(filters, rawData);
             }
 
+
+            const dataset: Map<string, number> = new Map();
             grouping.forEach((value, key) => {
                 const vol = rawData.filter((item: Record) => item[this.groupKey] === key)
                                    .reduce((sum, item) => sum + item.cantidad, 0);
                 if (vol > 0) {
-                    dataset.push([value, vol]);
+                    if (dataset.has(value)){
+                        dataset.set(value, dataset.get(value) + vol);
+                    }
+                    else {
+                        dataset.set(value, vol);
+                    }
                 }
             });
-            dataset = dataset.sort((a, b) => a[1] < b[1] ? 1 : (a[1] === b[1]) ? 0 : -1);
-            const labels = dataset.map((item) => (item[0]));
-            const volumes = dataset.map((item) => (item[1]));
+            const sortedDs: object[] = Array.from(dataset.entries()).sort((a, b) => a[1] < b[1] ? 1 : (a[1] === b[1]) ? 0 : -1);
+            const labels = sortedDs.map((item) => (item[0]));
+            const volumes = sortedDs.map((item) => (item[1]));
             this.setChartData(labels, volumes);
             this.loaded = true;
         },
@@ -92,7 +97,7 @@ const StationCompany = Vue.extend({
     },
     methods: {
         doFilter(filters: FilterObj, rawData: Record[]) {
-            return this.filterDualData(filters, rawData);
+            return this.filterCompData(filters, rawData);
         }
     },
     computed: {
