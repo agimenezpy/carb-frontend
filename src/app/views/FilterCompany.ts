@@ -40,7 +40,10 @@ const FilterCompany = Vue.extend({
         },
         companiesSales(companies: Map<number, string>) {
             if (companies.size > 0) {
-                const rawData = this.$store.getters["sales/getData"]("sales/by_category");
+                let rawData = this.$store.getters["sales/getData"]("sales/by_category");
+                if (rawData === undefined) {
+                    rawData = this.$store.getters["sales/getData"]("salesm/by_category");
+                }
                 this.setCompanies(companies, rawData);
             }
         }

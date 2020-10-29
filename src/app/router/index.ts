@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import Dashboard from '../views/Dashboard';
 import Salesboard from '../views/Salesboard';
+import Plantsboard from '../views/Plantsboard';
 
 
 // Views
@@ -28,6 +29,11 @@ export default new Router({
             path: '/sales',
             name: 'Sales',
             component: Salesboard
+        },
+        {
+            path: '/mix',
+            name: 'Sales Plants',
+            component: Plantsboard
         }
     ]
 });

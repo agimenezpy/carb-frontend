@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Loader from './Loader';
-import { PriceMonthsChart  } from './Charts';
+import { PriceMonthsChart  } from '../charts';
 import { FilterUtil, FilterObj, Record, WatchMonth } from './mixins';
 
 const template = `<div :class="[xclass]">

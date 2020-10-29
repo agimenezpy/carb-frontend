@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Loader from './Loader';
-import { CountryChart, ColorSchemes } from './Charts';
+import { CountryChart, ColorSchemes } from '../charts';
 import { Record } from './mixins';
 
 const template = `<div :class="[xclass]">

@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Loader from './Loader';
-import { CategoryYearsChart, ColorSchemes } from './Charts';
+import { CategoryYearsChart, ColorSchemes } from '../charts';
 import { FilterUtil, Record, WatchMonth } from './mixins';
 
 const template = `<div :class="[xclass]">
@@ -31,7 +31,8 @@ const CategoryYears = Vue.extend({
             loaded: false,
             title: "",
             colors: [],
-            chartData: {}
+            chartData: {},
+            year: 0
         };
     },
     props: {
@@ -42,14 +43,21 @@ const CategoryYears = Vue.extend({
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByMonth").then(this.updateChart);
+            this.$store.dispatch("imports/fetchByName", "by_month").then(() => {
+                const rawData = this.$store.getters["imports/getData"]("import/by_month");
+                const lastDate = rawData[rawData.length - 1].fecha;
+                this.year = parseInt(lastDate.split("-")[0], 10);
+                this.$store.dispatch("imports/fetchByName", `by_month/${this.year - 1}`)
+                            .then(this.updateChart)
+                            .catch(this.onError);
+            }).catch(this.onError);
         },
         updateChart(filters: object = {}) {
             this.loaded = false;
-            const categories: Map<string, string> = this.$store.getters.getMCategories;
+            const categories: Map<string, string> = this.$store.getters["imports/getCategories"];
             const rawData: Record[][] = [
-                    this.$store.getters.getMDataY1,
-                    this.$store.getters.getMDataY2
+                this.$store.getters["imports/getData"](`import/by_month/${this.year - 1}`),
+                this.$store.getters["imports/getData"](`import/by_month`)
             ];
             const lastDate = rawData[1][rawData[1].length - 1].fecha;
             const lastYear = parseInt(lastDate.split("-")[0], 10);

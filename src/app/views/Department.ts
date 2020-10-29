@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { CompanyChart } from './Charts';
+import { CompanyChart } from '../charts';
 import Loader from './Loader';
 import { FilterUtil, FilterObj, Record, WatchComp, WatchMonth, WatchDepto } from './mixins';
 

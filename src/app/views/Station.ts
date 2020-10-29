@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { StationChart } from './Charts';
+import { StationChart } from '../charts';
 import Loader from './Loader';
 import { FilterUtil, FilterObj, Record, WatchComp, WatchDepto} from './mixins';
 

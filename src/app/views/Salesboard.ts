@@ -56,10 +56,7 @@ const Salesboard = Vue.extend({
         ProductSales, CategorySalesTime, CategorySalesMonths, CompanySales, DepartmentSales,
         FilterMonth, FilterCompany, FilterDepartment, StationCompany, StationDepartment, StationMap, SalesPrice
     },
-    template,
-    mounted() {
-        this.$store.dispatch("sales/fetchByName", "by_category");
-    }
+    template
 });
 
 export default Salesboard;

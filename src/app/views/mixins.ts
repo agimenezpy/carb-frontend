@@ -8,6 +8,17 @@ export interface Record {
     [propName: string] : any;
 }
 
+function cleanNames(item: string): any {
+    let result = item;
+    const regex = / (PARAGUAY|SACIA|SAECA|SAE|SRL|SA)/gi;
+    result = result.replace(regex, "")
+                   .replace(/.* \(([A-Za-z ]+)\)/gi, "\$1")
+                   .replace(/([A-Za-z]+)CARBUROS DEL ([A-Za-z]+)/gi, "\$1\$2")
+                   .replace(/COMBUSTIBLES ([A-Za-z]+) .*/gi, "\$1")
+                   .replace("DISTRIBUIDOR", "");
+    return result;
+}
+
 const FilterUtil = {
     data() {
         return {
@@ -126,5 +137,5 @@ const WatchDepto = {
 };
 
 export {
-    FilterUtil, WatchMonth, WatchComp, WatchDepto
+    FilterUtil, WatchMonth, WatchComp, WatchDepto, cleanNames
 };

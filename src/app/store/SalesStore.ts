@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { cleanNames } from '../views/mixins';
 
 interface Payload {
     [propName: string]: any;
@@ -11,18 +12,8 @@ interface State {
     categoria: Map<string, string>;
     departamento: Map<string, string>;
     distribuidor: Map<number, string>;
+    emblema: Map<string, string>;
     requests: Map<string, object>;
-}
-
-function cleanNames(item: string): any {
-    let result = item;
-    const regex = / (PARAGUAY|SACIA|SAECA|SAE|SRL|SA)/gi;
-    result = result.replace(regex, "")
-                   .replace(/.* \(([A-Za-z ]+)\)/gi, "\$1")
-                   .replace(/([A-Za-z]+)CARBUROS DEL ([A-Za-z]+)/gi, "\$1\$2")
-                   .replace(/COMBUSTIBLES ([A-Za-z]+) .*/gi, "\$1")
-                   .replace("DISTRIBUIDOR", "");
-    return result;
 }
 
 const SalesStore = {
@@ -32,6 +23,9 @@ const SalesStore = {
         data: new Map(),
         departamento: new Map(),
         distribuidor: new Map(),
+        categoria: new Map(),
+        emblema: new Map(),
+        producto: new Map(),
         requests: new Map()
     },
     mutations: {
@@ -67,6 +61,12 @@ const SalesStore = {
                     original.entries()
                 ).sort((a, b) => (a[1] > b[1]) ? 1 : -1)
             );
+        },
+        setEmblem(state: State, emblem: object) {
+            state.emblema = new Map();
+            Object.keys(emblem).forEach(key => (
+                state.emblema.set(key, emblem[key])
+            ));
         }
     },
     getters: {
@@ -82,23 +82,35 @@ const SalesStore = {
         getCompanies(state: State): Map<number, string>{
             return state.distribuidor;
         },
+        getEmblems(state: State): Map<string, string>{
+            return state.emblema;
+        },
         getData(state: State): any {
             return (api: string) => state.data.get(api);
         }
     },
     actions: {
         fetchByName(context: any, uri: string): any {
-            const api = `/api/sales/${uri}`;
+            const api = (uri.startsWith("by_")) ? `sales/${uri}` : uri;
             const requests = context.state.requests;
             if (requests.has(api)) {
                 return requests.get(api);
             }
             const req = new Promise((resolve, reject) => {
-                axios.get(api)
+                axios.get("/api/" + api)
                 .then((response) => {
+                    let data = response.data.data;
+                    if (response.data.rows !== undefined) {
+                        data = {
+                            rows: response.data.rows,
+                            columns: response.data.columns,
+                            data: response.data.data
+                        };
+                    }
+
                     context.commit("setData", {
-                        api: `sales/${uri}`,
-                        data: response.data.data
+                        api,
+                        data
                     });
                     if (response.data.producto !== undefined) {
                         context.commit("setProducts", response.data.producto);
@@ -111,6 +123,9 @@ const SalesStore = {
                     }
                     if (response.data.distribuidor !== undefined) {
                         context.commit("setCompanies", response.data.distribuidor);
+                    }
+                    if (response.data.emblema !== undefined) {
+                        context.commit("setEmblem", response.data.emblema);
                     }
                     resolve();
                     context.state.requests.delete(api);

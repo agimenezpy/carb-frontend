@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { cleanNames } from '../views/mixins';
 
 interface Payload {
     [propName: string]: any;
@@ -14,22 +15,12 @@ interface State {
     requests: Map<string, object>;
 }
 
-function cleanNames(item: string): any {
-    let result = item;
-    const regex = / (PARAGUAY|SACIA|SAECA|SAE|SRL|SA)/gi;
-    result = result.replace(regex, "")
-                   .replace(/.* \(([A-Za-z ]+)\)/gi, "\$1")
-                   .replace(/([A-Za-z]+)CARBUROS DEL ([A-Za-z]+)/gi, "\$1\$2")
-                   .replace(/COMBUSTIBLES ([A-Za-z]+) .*/gi, "\$1")
-                   .replace("DISTRIBUIDOR", "");
-    return result;
-}
-
 const ImportStore = {
     namespaced: true,
     state: {
         status: "",
         data: new Map(),
+        categoria: new Map(),
         requests: new Map()
     },
     mutations: {

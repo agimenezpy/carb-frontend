@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Loader from './Loader';
-import { CategoryChart, ColorSchemes } from './Charts';
+import { CategoryChart, ColorSchemes } from '../charts';
 import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp } from './mixins';
 
 
@@ -37,13 +37,10 @@ const Category = Vue.extend({
         styles: Object
     },
     methods: {
-        requestData() {
-            this.$store.dispatch("fetchByCompany").then(this.updateChart);
-        },
         updateChart(filters: FilterObj = {fComp: undefined, fMonth: undefined}) {
             this.loaded = false;
-            const categories: Map<string, string> = this.$store.getters.getCategories;
-            let rawData: Record[] = this.$store.getters.getComData;
+            const categories: Map<string, string> = this.categories;
+            let rawData: Record[] = this.rawData;
 
             const labels: string[] = [];
             const volumes: number[] = [];
@@ -60,14 +57,18 @@ const Category = Vue.extend({
                     volumes.push(vol);
                 }
             });
-            this.title = categories.get(this.type);
+
+            this.title = (this.type === "TOTAL") ?
+                         Array.from(categories.values()).join(" y ") :
+                         categories.get(this.type) ;
             this.loaded = true;
             this.setChartData(labels, volumes);
         },
         setChartData(labels: string[], volumes: number[]) {
             this.chartData = {
-                colors: this.title === "GASOIL" ? this.colors[0] : this.colors[1],
-                invert: this.title !== "GASOIL",
+                colors: this.colors[this.type],
+                invert: this.type === "TOTAL" ? undefined : this.type === "GA",
+                legend: this.type === "TOTAL",
                 labels,
                 datasets: [
                     {
@@ -78,11 +79,61 @@ const Category = Vue.extend({
         }
     },
     mounted() {
-        const schemes = ColorSchemes.getColorSchemes();
-        this.colors = [[schemes.office.Blue6[0], schemes.brewer.Blues6[0]],
-                        [schemes.brewer.Oranges6[0], schemes.office.Orange6[0]]];
         this.requestData();
     }
 });
 
-export default Category;
+const CategoryImport = Vue.extend({
+    extends: Category,
+    data() {
+        const schemes = ColorSchemes.getColorSchemes();
+        return {
+            colors: {
+                "GL": [schemes.office.Blue6[0], schemes.brewer.Blues6[0]],
+                "GA": [schemes.brewer.Oranges6[0], schemes.office.Orange6[0]]
+            }
+        };
+    },
+    computed: {
+        categories() {
+            return this.$store.getters.getCategories;
+        },
+        rawData() {
+            return this.$store.getters.getComData;
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("fetchByCompany").then(this.updateChart);
+        }
+    }
+});
+
+const CategorySalesMix = Vue.extend({
+    extends: Category,
+    data() {
+        const schemes = ColorSchemes.getColorSchemes();
+        return {
+            colors: {
+                "TOTAL": [schemes.office.Blue6[0], schemes.office.Orange6[0]],
+            }
+        };
+    },
+    computed: {
+        categories() {
+            return this.$store.getters["sales/getCategories"];
+        },
+        rawData() {
+            return this.$store.getters["sales/getData"]("salesm/by_category");
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "salesm/by_category")
+                       .then(this.updateChart)
+                       .catch(this.onError);
+        }
+    }
+});
+
+export { CategoryImport, CategorySalesMix };

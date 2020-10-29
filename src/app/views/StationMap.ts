@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { GeoMapChart, getTopoJSON, TopoJSONType, ColorSchemes} from './Charts';
+import { GeoMapChart, getTopoJSON, TopoJSONType, ColorSchemes} from '../charts';
 import Loader from './Loader';
 import { FilterUtil, FilterObj, Record, WatchComp} from './mixins';
 

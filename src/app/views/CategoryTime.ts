@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { CategoryTimeChart } from './Charts';
+import { CategoryTimeChart } from '../charts';
 import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp, WatchDepto } from './mixins';
 import Loader from './Loader';
 
@@ -7,7 +7,10 @@ const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <div class="font-size--3">{{header.replace("$year", title)}}</div>
-            <Loader v-if="!loaded"/>
+            <Loader v-if="!loaded && !error"/>
+            <div class="alert alert-red modifier-class is-active" v-if="error">
+                Error al obtener datos
+            </div>
             <category-time-chart v-if="loaded" :chart-data="chartData" :styles="styles" :amountType="amountType"></category-time-chart>
         </div>
     </div>
@@ -29,6 +32,7 @@ const CategoryTime = Vue.extend({
             loaded: false,
             chartData: {},
             title: "",
+            error: false,
             amountType: ""
         };
     },
@@ -38,6 +42,10 @@ const CategoryTime = Vue.extend({
         styles: Object
     },
     methods: {
+        onError(status: number) {
+            this.loaded = false;
+            this.error = status > 0;
+        },
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
             const categories: Map<string, string> = this.categories;
@@ -110,15 +118,17 @@ const CategoryImportTime = Vue.extend({
     mixins: [WatchMonth, WatchComp],
     computed: {
         categories() {
-            return this.$store.getters.getCategories;
+            return this.$store.getters["imports/getCategories"];
         },
         rawData() {
-            return this.$store.getters.getComData;
+            return this.$store.getters["imports/getData"]("import/by_category");
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByCompany").then(this.updateChart);
+            this.$store.dispatch("imports/fetchByName", "by_category")
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     }
 });
@@ -140,12 +150,38 @@ const CategorySalesTime = Vue.extend({
     },
     methods: {
         requestData() {
-            this.$store.dispatch("sales/fetchByName", "by_category").then(this.updateChart);
+            this.$store.dispatch("sales/fetchByName", "by_category")
+                        .then(this.updateChart)
+                        .catch(this.onError);
+        }
+    }
+});
+
+const CategorySalesMTime = Vue.extend({
+    extends: CategoryTime,
+    mixins: [WatchMonth, WatchComp],
+    data() {
+        return {amountType: "short"};
+    },
+    computed: {
+        categories() {
+            return this.$store.getters["sales/getCategories"];
+        },
+        rawData() {
+            return this.$store.getters["sales/getData"]("salesm/by_category");
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "salesm/by_category")
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     }
 });
 
 export {
     CategoryImportTime,
-    CategorySalesTime
+    CategorySalesTime,
+    CategorySalesMTime
 };

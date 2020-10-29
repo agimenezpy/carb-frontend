@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import { ProductImport } from './Product';
-import Category from './Category';
+import { CategoryImport } from './Category';
 import {CompanyImport} from './Company';
 import { CategoryImportTime } from './CategoryTime';
 import { CategoryImportMonths } from './CategoryMonths';
@@ -23,8 +23,8 @@ const template = `
         <h2 class="text-rule">Importación de combustibles</h2>
         <div class="column-20 leader-1">
             <ProductImport header="Importación por Producto (litros)" xclass="column-6" :styles="{height: '240px'}"/>
-            <Category type="GL" header="Importación de $title" xclass="column-7" :styles="{height: '240px'}"/>
-            <Category type="GA" header="Importación de $title" xclass="column-7" :styles="{height: '240px'}"/>
+            <CategoryImport type="GL" header="Importación de $title" xclass="column-7" :styles="{height: '240px'}"/>
+            <CategoryImport type="GA" header="Importación de $title" xclass="column-7" :styles="{height: '240px'}"/>
         </div>
         <div class="column-20 leader-1">
             <CompanyImport header="Importación por Empresa (litros)" xclass="column-8" :styles="{height: '240px'}"/>
@@ -52,7 +52,7 @@ const template = `
 const Dashboard = Vue.extend({
     name: "Dashboard",
     components: {
-        ProductImport, Category, CompanyImport,
+        ProductImport, CategoryImport, CompanyImport,
         CategoryImportTime, CategoryImportMonths, CategoryYears, PriceImportMonths,
         FilterMonth, FilterCompany, Country
     },

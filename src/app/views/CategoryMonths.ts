@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Loader from './Loader';
-import { CategoryMonthsChart  } from './Charts';
+import { CategoryMonthsChart  } from '../charts';
 import { FilterUtil, FilterObj, Record, WatchMonth } from './mixins';
 
 const template = `<div :class="[xclass]">
@@ -32,7 +32,8 @@ const CategoryMonths = Vue.extend({
             loaded: false,
             title: "",
             chartData: {},
-            error: false
+            error: false,
+            year: 0
         };
     },
     props: {
@@ -112,36 +113,33 @@ const CategoryMonths = Vue.extend({
 
 const CategoryImportMonths = Vue.extend({
     extends: CategoryMonths,
-    data() {
-        return {
-            year: 2020
-        };
-    },
     computed: {
         categories() {
-            return this.$store.getters.getMCategories;
+            return this.$store.getters["imports/getCategories"];
         },
         rawData() {
             return [
-                this.$store.getters.getMDataY1,
-                this.$store.getters.getMDataY2
+                this.$store.getters["imports/getData"](`import/by_month/${this.year - 1}`),
+                this.$store.getters["imports/getData"](`import/by_month`)
             ];
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByMonth", this.year).then(this.updateChart).catch(this.onError);
+            this.$store.dispatch("imports/fetchByName", "by_month").then(() => {
+                const rawData = this.$store.getters["imports/getData"]("import/by_month");
+                const lastDate = rawData[rawData.length - 1].fecha;
+                this.year = parseInt(lastDate.split("-")[0], 10);
+                this.$store.dispatch("imports/fetchByName", `by_month/${this.year - 1}`)
+                            .then(this.updateChart)
+                            .catch(this.onError);
+            }).catch(this.onError);
         }
     }
 });
 
 const CategorySalesMonths = Vue.extend({
     extends: CategoryMonths,
-    data() {
-        return {
-            year: 2020
-        };
-    },
     computed: {
         categories() {
             return this.$store.getters["sales/getCategories"];
@@ -149,13 +147,16 @@ const CategorySalesMonths = Vue.extend({
         rawData() {
             return [
                 this.$store.getters["sales/getData"](`sales/by_month/${this.year - 1}`),
-                this.$store.getters["sales/getData"](`sales/by_month/${this.year}`)
+                this.$store.getters["sales/getData"](`sales/by_month`)
             ];
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("sales/fetchByName", `by_month/${this.year}`).then(() => {
+            this.$store.dispatch("sales/fetchByName", "by_month").then(() => {
+                const rawData = this.$store.getters["sales/getData"]("sales/by_month");
+                const lastDate = rawData[rawData.length - 1].fecha;
+                this.year = parseInt(lastDate.split("-")[0], 10);
                 this.$store.dispatch("sales/fetchByName", `by_month/${this.year - 1}`)
                             .then(this.updateChart)
                             .catch(this.onError);
