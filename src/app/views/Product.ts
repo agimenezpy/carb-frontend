@@ -29,7 +29,8 @@ const Product = Vue.extend({
             chartData: {},
             error: false,
             colors: [],
-            div: 1
+            div: 1,
+            split: false
         };
     },
     props: {
@@ -60,11 +61,7 @@ const Product = Vue.extend({
 
                 const vol = qs.reduce((sum, item) => sum + item.volumen, 0);
                 if (vol > 0) {
-                    labels.push(
-                        value.replace("SIN ", "S/")
-                             .replace("CON ", "C/")
-                             .replace("ALCOHOL", "A")
-                    );
+                    labels.push(value);
                     volumes.push(vol);
                 }
             });
@@ -72,16 +69,32 @@ const Product = Vue.extend({
             this.loaded = true;
         },
         setChartData(labels: string[], volumes: number[]) {
-            this.chartData = {
-                labels,
-                div: this.div, // division entre millones?
-                datasets: [
-                    {
-                        backgroundColor: this.colors,
-                        data: volumes
-                    }
-                ]
-            };
+            if (this.split) {
+                this.chartData = {
+                    div: this.div, // division entre millones?
+                    labels: ["Producto"],
+                    legend: true,
+                    datasets: labels.map((item: any, idx: number) => (
+                        {
+                            label: [labels[idx]],
+                            backgroundColor: this.colors[idx],
+                            data: [volumes[idx]]
+                        })
+                    )
+                };
+            }
+            else {
+                this.chartData = {
+                    labels,
+                    div: this.div, // division entre millones?
+                    datasets: [
+                        {
+                            backgroundColor: this.colors,
+                            data: volumes
+                        }
+                    ]
+                };
+            }
         }
     },
     mounted() {
@@ -139,7 +152,8 @@ const ProductSalesMix = Vue.extend({
     mixins: [WatchMonth, WatchComp, WatchDepto],
     data() {
         return {
-            div: 1e6
+            div: 1e6,
+            split: true
         };
     },
     methods: {

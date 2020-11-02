@@ -14,7 +14,8 @@ import CountryChart from './CountryChart';
 import StationChart from './StationChart';
 import GeoMapChart from './GeoMapChart';
 import CompanyShareChart from './CompanyShareChart';
-
+import ClientMixChart from './ClientMixChart';
+import ProductsMixChart from './ProductsMixChart';
 
 interface ColorSchemesType {
     [propName: string]: any;
@@ -34,9 +35,12 @@ function getTopoJSON() {
     return ChartGeo.topojson;
 }
 
+const formatter = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
+
 export {
-    ColorSchemes, TopoJSONType, ColorSchemesType, getTopoJSON,
+    ColorSchemes, TopoJSONType, ColorSchemesType, getTopoJSON, formatter,
     CategoryChart, CategoryMonthsChart, StationChart,
     CategoryTimeChart, CategoryYearsChart, CompanyChart, ProductChart,
-    GeoMapChart, PriceMonthsChart, CountryChart, CompanyShareChart
+    GeoMapChart, PriceMonthsChart, CountryChart, CompanyShareChart, 
+    ClientMixChart, ProductsMixChart
 };

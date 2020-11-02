@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import { Bar, mixins } from 'vue-chartjs';
+import { formatter } from './index';
 
 const ProductChart = Vue.extend({
     extends: Bar,
@@ -24,10 +25,9 @@ const ProductChart = Vue.extend({
                             display: false,
                             beginAtZero: false,
                             callback: (label: number) => {
-                                const fmt = Intl.NumberFormat().format;
-                                if (label < 1e3) return fmt(label);
-                                if (label >= 1e6) return fmt(label / 1e6) + "M";
-                                if (label >= 1e3) return fmt(label / 1e3) + "K";
+                                if (label < 1e3) return formatter(label);
+                                if (label >= 1e6) return formatter(label / 1e6) + "M";
+                                if (label >= 1e3) return formatter(label / 1e3) + "K";
                             }
                         },
                         gridLines: {
@@ -50,7 +50,12 @@ const ProductChart = Vue.extend({
                     }]
                 },
                 legend: {
-                    display: false
+                    display: this.chartData.legend !== undefined && this.chartData.legend,
+                    position: 'right',
+                    labels: {
+                        fontSize: 10,
+                        boxWidth: 10
+                    }
                 },
                 title: {
                     display: this.title !== undefined,
@@ -58,7 +63,7 @@ const ProductChart = Vue.extend({
                 },
                 tooltips: {
                     callbacks: {
-                        label: (item: any, data: any) => Intl.NumberFormat().format(item.yLabel)
+                        label: (item: any, data: any) => formatter(item.yLabel)
                     }
                 },
                 plugins: {
@@ -75,7 +80,7 @@ const ProductChart = Vue.extend({
                         anchor: 'start',
                         align: 'end',
                         formatter: (value: any, context: any) => (
-                            Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format(value / this.chartData.div)
+                            formatter(value / this.chartData.div)
                         )
                     }
                 },

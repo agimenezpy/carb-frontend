@@ -8,6 +8,8 @@ function getPercentaje(context: any) {
     return Math.round((value / total) * 100);
 }
 
+const formatter = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
+
 const CompanyShareChart = Vue.extend({
     extends: Pie,
     mixins: [ mixins.reactiveProp ],
@@ -25,6 +27,14 @@ const CompanyShareChart = Vue.extend({
     data() {
         return {
             options: {
+                layout: {
+                    padding: {
+                      top: 55,
+                      left: 55,
+                      right: 55,
+                      bottom: 55
+                    }
+                },
                 legend: {
                     display: false
                 },
@@ -35,10 +45,10 @@ const CompanyShareChart = Vue.extend({
                 tooltips: {
                     callbacks: {
                         label: (item: any, data: any) => {
-                            const value = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format(
+                            const value = formatter(
                                 data.datasets[item.datasetIndex].data[item.index] / 1e6
                             );
-                            return `${data.labels[item.index]}:${value}`;
+                            return `${data.labels[item.index]}: ${value}`;
                         }
                     }
                 },
@@ -47,21 +57,21 @@ const CompanyShareChart = Vue.extend({
                     datalabels: {
                         rotation(context: any) {
                             const perc = getPercentaje(context);
-                            return (perc < 5) ? -90 : 0;
+                            return (perc < 5) ? 90 : 0;
                         },
                         formatter: (value: any, context: any) => {
                             const perc = getPercentaje(context);
                             const label = context.chart.data.labels[context.dataIndex];
-                            return (perc < 5) ? `${label} ${perc}%` : `${label}\n${perc}%`;
+                            return (perc < 5) ? `${perc}%` : `${label}\n${perc}%`;
                         },
                         color: "#000000",
                         anchor(context: any) {
                             const perc = getPercentaje(context);
-                            return (perc < 5) ? "end" : "center";
+                            return (perc < 5) ? "end" : "end";
                         },
                         align(context: any) {
                             const perc = getPercentaje(context);
-                            return (perc < 5) ? "start" : "end";
+                            return (perc < 5) ? "end" : "end";
                         },
                         textAlign: "center",
                         labels: {

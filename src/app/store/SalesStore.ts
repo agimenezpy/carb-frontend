@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { cleanNames } from '../views/mixins';
+import { cleanNames, cleanProducts } from '../views/mixins';
 
 interface Payload {
     [propName: string]: any;
@@ -35,7 +35,7 @@ const SalesStore = {
         setProducts(state: State, producto: object) {
             state.producto = new Map();
             Object.keys(producto).forEach(key => (
-                state.producto.set(key, producto[key])
+                state.producto.set(key, cleanProducts(producto[key]))
             ));
         },
         setCategories(state: State, categoria: object) {

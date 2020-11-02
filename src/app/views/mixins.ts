@@ -15,8 +15,13 @@ function cleanNames(item: string): any {
                    .replace(/.* \(([A-Za-z ]+)\)/gi, "\$1")
                    .replace(/([A-Za-z]+)CARBUROS DEL ([A-Za-z]+)/gi, "\$1\$2")
                    .replace(/COMBUSTIBLES ([A-Za-z]+) .*/gi, "\$1")
-                   .replace("DISTRIBUIDOR", "");
+                   .replace("DISTRIBUIDOR", "")
+                   .replace(" ENERGY", "");
     return result;
+}
+
+function cleanProducts(item: string): string {
+    return item.replace("SIN ALCOHOL", "S/A").replace("CON ALCOHOL", "C/A");
 }
 
 const FilterUtil = {
@@ -137,5 +142,5 @@ const WatchDepto = {
 };
 
 export {
-    FilterUtil, WatchMonth, WatchComp, WatchDepto, cleanNames
+    FilterUtil, WatchMonth, WatchComp, WatchDepto, cleanNames, cleanProducts
 };

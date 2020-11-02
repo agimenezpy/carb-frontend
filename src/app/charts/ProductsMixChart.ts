@@ -2,7 +2,7 @@ import Vue from 'vue';
 import { HorizontalBar, mixins } from 'vue-chartjs';
 import { formatter } from './index';
 
-const CompanyChart = Vue.extend({
+const ProductsMixChart = Vue.extend({
     extends: HorizontalBar,
     mixins: [ mixins.reactiveProp ],
     props: {
@@ -28,36 +28,31 @@ const CompanyChart = Vue.extend({
                                 if (label >= 1e3) return formatter(label / 1e3) + "K";
                             }
                         },
-                        gridLines: {
-                            display: true
-                        },
-                        scaleLabel: {
-                            display: false,
-                            labelString: "Litros"
-                        }
+                        gridLines: { display: true },
+                        scaleLabel: { display: false, labelString: "Litros" }
                     }],
                     yAxes: [{
-                        ticks: {
-                            display: true
-                        },
-                        gridLines: {
-                            display: false
-                        },
+                        ticks: { display: true },
+                        gridLines: { display: false },
                         scaleLabel: {
-                            display: false, labelString: "Empresas"
+                            display: false, labelString: "Productos"
                         }
                     }]
                 },
                 legend: {
-                    display: true
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        fontSize: 10,
+                        boxWidth: 10
+                    }
                 },
                 title: {
-                    display: this.title !== undefined,
-                    text: this.title
+                    display: false
                 },
                 tooltips: {
                     callbacks: {
-                        label: (item: any, data: any) => formatter(item.xLabel)
+                        label: (item: any) => formatter(item.xLabel / 1e6)
                     }
                 },
                 plugins: {
@@ -66,7 +61,7 @@ const CompanyChart = Vue.extend({
                         clamp: true,
                         anchor: 'start',
                         align: 'end',
-                        formatter: (value: any, context: any) => formatter(value)
+                        formatter: (value: any) => formatter(value)
                     },
                     colorschemes: {
                         scheme: 'office.Office6'
@@ -81,4 +76,4 @@ const CompanyChart = Vue.extend({
     }
 });
 
-export default CompanyChart;
+export default ProductsMixChart;
