@@ -96,7 +96,7 @@ const CompanyMixer = Vue.extend({
                 }
             });
             this.chartData = {
-                labels: labels.companies,
+                labels: labels.companies.map((item: string) => (item.replace(" ", "\n"))),
                 datasets
             };
         }

@@ -18,6 +18,11 @@ const ProductsMixChart = Vue.extend({
     data() {
         return {
             options: {
+                layout: {
+                    padding: {
+                      left: 5
+                    }
+                },
                 scales: {
                     xAxes: [{
                         ticks: {
@@ -72,6 +77,16 @@ const ProductsMixChart = Vue.extend({
         };
     },
     mounted() {
+        this.addPlugin({
+            id: 'multi-line',
+            beforeInit(context: any) {
+                context.data.labels.forEach((label: string, idx: number, array: any) => {
+                    if (/\n/.test(label)) {
+                        array[idx] = label.split("\n");
+                    }
+                });
+            }
+        });
         this.renderChart(this.chartData, this.options);
     }
 });

@@ -31,9 +31,9 @@ const template = `
             <CategorySalesMTime header="Ventas por Mes $year (millones de litros)" xclass="column-8" :styles="{height: '240px'}"/>
         </div>
         <div class="column-20 leader-1">
-            <MonthsMixer header="Ventas por mes por produto (millones de litros)" xclass="column-6"/>
-            <CompanyMixer header="Ventas de combustible por mezcladora (millones de litros)" xclass="column-7"/>
-            <ClientMixer header="Ventas de combustible por destino (millones de litros)" xclass="column-7"/>
+            <MonthsMixer header="Ventas por mes por produtos (millones de litros)" xclass="column-7" :styles="{height: '500px'}"/>
+            <CompanyMixer header="Ventas de combustible por mezcladoras (millones de litros)" xclass="column-7" :styles="{height: '500px'}"/>
+            <ClientMixer header="Ventas de combustible por destino (millones de litros)" xclass="column-6" :styles="{height: '480px'}"/>
         </div>
     </div>
 </div>`;
