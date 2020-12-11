@@ -3,6 +3,7 @@ import { CompanyShare } from './CompanyShare';
 import { CategorySalesMix } from './Category';
 import { ProductSalesMix } from './Product';
 import { CategorySalesMTime } from './CategoryTime';
+import { CategorySalesMMonths } from './CategoryMonths';
 import { ClientMixer } from './ClientMixer';
 import { CompanyMixer } from './CompanyMixer';
 import { MonthsMixer } from './MonthsMixer';
@@ -35,6 +36,10 @@ const template = `
             <CompanyMixer header="Ventas de combustible por mezcladoras (millones de litros)" xclass="column-7" :styles="{height: '500px'}"/>
             <ClientMixer header="Ventas de combustible por destino (millones de litros)" xclass="column-6" :styles="{height: '480px'}"/>
         </div>
+        <div class="column-20 leader-1">
+            <CategorySalesMMonths header="Venta de $title (millones de litros)" type="GL" xclass="column-10" :styles="{height: '240px'}"/>
+            <CategorySalesMMonths header="Venta de $title (millones de litros)" type="GA" xclass="column-10" :styles="{height: '240px'}"/>
+        </div>
     </div>
 </div>`;
 
@@ -42,7 +47,7 @@ const Plantsboard = Vue.extend({
     name: "Plantsboard",
     components: {
         CompanyShare, CategorySalesMix, ProductSalesMix, CategorySalesMTime,
-        ClientMixer, CompanyMixer, MonthsMixer,
+        ClientMixer, CompanyMixer, MonthsMixer, CategorySalesMMonths,
         FilterMonth, FilterCompany
     },
     template

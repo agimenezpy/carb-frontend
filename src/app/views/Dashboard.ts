@@ -36,7 +36,7 @@ const template = `
         </div>
         <div class="column-20 leader-1">
             <CategoryYears header="Importación $title (litros)" xclass="column-10" :styles="{height: '240px'}"/>
-            <PriceImportMonths header="Precio $title (dolares/litro)" type="GTI" xclass="column-10" :styles="{height: '240px'}"/>
+            <PriceImportMonths header="Precio $title (dolares/litro)" type="GTA" xclass="column-10" :styles="{height: '240px'}"/>
         </div>
         <div class="column-20 leader-1">
             <PriceImportMonths header="Precio $title (dolares/litro)" type="NV" xclass="column-10" :styles="{height: '240px'}"/>

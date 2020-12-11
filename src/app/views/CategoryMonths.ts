@@ -165,5 +165,31 @@ const CategorySalesMonths = Vue.extend({
     }
 });
 
+const CategorySalesMMonths = Vue.extend({
+    extends: CategoryMonths,
+    computed: {
+        categories() {
+            return this.$store.getters["sales/getCategories"];
+        },
+        rawData() {
+            return [
+                this.$store.getters["sales/getData"](`salesm/by_month/${this.year - 1}`),
+                this.$store.getters["sales/getData"](`salesm/by_month`)
+            ];
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "salesm/by_month").then(() => {
+                const rawData = this.$store.getters["sales/getData"]("salesm/by_month");
+                const lastDate = rawData[rawData.length - 1].fecha;
+                this.year = parseInt(lastDate.split("-")[0], 10);
+                this.$store.dispatch("sales/fetchByName", `salesm/by_month/${this.year - 1}`)
+                            .then(this.updateChart)
+                            .catch(this.onError);
+            }).catch(this.onError);
+        }
+    }
+});
 
-export { CategoryImportMonths, CategorySalesMonths };
+export { CategoryImportMonths, CategorySalesMonths, CategorySalesMMonths };

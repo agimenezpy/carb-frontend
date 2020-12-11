@@ -133,7 +133,6 @@ const CategoryImportTime = Vue.extend({
     }
 });
 
-
 const CategorySalesTime = Vue.extend({
     extends: CategoryTime,
     mixins: [WatchMonth, WatchComp, WatchDepto],
