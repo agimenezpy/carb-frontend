@@ -57,7 +57,7 @@ const PriceStore = {
                             context.commit("setPriDataY1", responses[0].data.data);
                             context.commit("setPriDataY2", responses[1].data.data);
                             context.commit("setPriProducts", responses[0].data.producto);
-                            resolve();
+                            resolve({});
                         }))
                         .catch(error => {
                             context.commit("setPriStatus", "ERROR");

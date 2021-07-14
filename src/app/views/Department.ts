@@ -1,15 +1,18 @@
 import Vue from 'vue';
 import { CompanyChart } from '../charts';
 import Loader from './Loader';
-import { FilterUtil, FilterObj, Record, WatchComp, WatchMonth, WatchDepto } from './mixins';
+import { FilterUtil, FilterObj, Record, WatchComp, WatchMonth, WatchDepto, CardUtil } from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
             <div class="font-size--3">{{header}}</div>
-            <Loader v-if="!loaded && !error"/>
+            <Loader v-if="!loaded && !error && !empty"/>
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
             </div>
             <company-chart v-if="loaded" :chart-data="chartData"></company-chart>
         </div>
@@ -26,13 +29,11 @@ const Department = Vue.extend({
     components: {
         CompanyChart, Loader
     },
-    mixins: [FilterUtil],
+    mixins: [FilterUtil, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
-            chartData: {},
-            error: false
+            chartData: {}
         };
     },
     props: {
@@ -40,15 +41,18 @@ const Department = Vue.extend({
         xclass: String
     },
     methods: {
-        onError(status: number) {
-            this.error = status > 0;
-        },
         updateChart(filters: FilterObj = {}){
             this.loaded = false;
+            this.empty = false;
             const departments: Map<string, string> = this.departments;
             const category: Map<string, string> = this.categories;
             let rawData: Record[] = this.rawData;
             const fDepto = filters.fDepto;
+
+            if (rawData.length < 1) {
+                this.empty = true;
+                return;
+            }
 
             const labels: Labels = {
                 "departaments": new Array<string>(),
@@ -96,8 +100,20 @@ const Department = Vue.extend({
             };
         }
     },
+    watch: {
+        year() {
+            this.requestData();
+        }
+    },
+    computed: {
+        year() {
+            return this.$store.getters.getYear;
+        }
+    },
     mounted() {
-        this.requestData();
+        if (this.year > 0) {
+            this.requestData();
+        }
     }
 });
 
@@ -112,12 +128,12 @@ const DepartmentSales = Vue.extend({
             return this.$store.getters["sales/getCategories"];
         },
         rawData() {
-            return this.$store.getters["sales/getData"]("sales/by_category");
+            return this.$store.getters["sales/getData"]("sales/by_category/" + this.year);
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("sales/fetchByName", "by_category")
+            this.$store.dispatch("sales/fetchByName", "by_category/" + this.year)
                        .then(this.updateChart)
                        .catch(this.onError);
         }

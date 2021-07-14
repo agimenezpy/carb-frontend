@@ -1,13 +1,19 @@
 import Vue from 'vue';
 import Loader from './Loader';
 import { CategoryYearsChart, ColorSchemes } from '../charts';
-import { FilterUtil, Record, WatchMonth } from './mixins';
+import { CardUtil, FilterUtil, Record, WatchMonth } from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <div class="font-size--3">{{header.replace("$title", title)}}</div>
-            <Loader v-if="!loaded"/>
+            <Loader v-if="!loaded && !empty && !error"/>
+            <div class="alert alert-red modifier-class is-active" v-if="error">
+                Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
+            </div>
             <category-years-chart v-if="loaded" :chart-data="chartData" :styles="styles"></category-years-chart>
         </div>
     </div>
@@ -24,15 +30,13 @@ const CategoryYears = Vue.extend({
     components: {
         CategoryYearsChart, Loader
     },
-    mixins: [FilterUtil, WatchMonth],
+    mixins: [FilterUtil, WatchMonth, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
             title: "",
             colors: [],
-            chartData: {},
-            year: 0
+            chartData: {}
         };
     },
     props: {
@@ -43,22 +47,25 @@ const CategoryYears = Vue.extend({
     },
     methods: {
         requestData() {
-            this.$store.dispatch("imports/fetchByName", "by_month").then(() => {
-                const rawData = this.$store.getters["imports/getData"]("import/by_month");
-                const lastDate = rawData[rawData.length - 1].fecha;
-                this.year = parseInt(lastDate.split("-")[0], 10);
+            this.$store.dispatch("imports/fetchByName", "by_month/" + this.year).then(() => {
                 this.$store.dispatch("imports/fetchByName", `by_month/${this.year - 1}`)
-                            .then(this.updateChart)
-                            .catch(this.onError);
+                        .then(this.updateChart)
+                        .catch(this.onError);
             }).catch(this.onError);
         },
         updateChart(filters: object = {}) {
             this.loaded = false;
+            this.empty = false;
             const categories: Map<string, string> = this.$store.getters["imports/getCategories"];
             const rawData: Record[][] = [
                 this.$store.getters["imports/getData"](`import/by_month/${this.year - 1}`),
-                this.$store.getters["imports/getData"](`import/by_month`)
+                this.$store.getters["imports/getData"](`import/by_month/${this.year}`)
             ];
+
+            if (rawData.length < 2 || rawData[0].length === 0 || rawData[1].length === 0) {
+                this.empty = true;
+                return;
+            }
             const lastDate = rawData[1][rawData[1].length - 1].fecha;
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const volumes: object[] = [];
@@ -102,11 +109,23 @@ const CategoryYears = Vue.extend({
             };
         }
     },
+    watch: {
+        year() {
+            this.requestData();
+        }
+    },
+    computed: {
+        year() {
+            return this.$store.getters.getYear;
+        }
+    },
     mounted() {
         const schm = ColorSchemes.getColorSchemes();
         this.colors = [schm.office.Blue6,
                        schm.office.Orange6.slice(0, 2).reverse()];
-        this.requestData();
+        if (this.year > 0) {
+            this.requestData();
+        }
     }
 });
 

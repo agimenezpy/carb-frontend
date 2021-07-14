@@ -1,15 +1,18 @@
 import Vue from 'vue';
 import Loader from './Loader';
 import { ProductsMixChart } from '../charts';
-import { FilterObj, FilterUtil, Record, WatchComp, WatchMonth } from './mixins';
+import { CardUtil, FilterObj, FilterUtil, Record, WatchComp, WatchMonth } from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <div class="font-size--3">{{header}}</div>
-            <Loader v-if="!loaded && !error"/>
+            <Loader v-if="!loaded && !error && !empty"/>
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
             </div>
             <products-mix-chart v-if="loaded" :chart-data="chartData" :aspect="aspect" :styles="styles"></products-mix-chart>
         </div>
@@ -26,12 +29,10 @@ const MonthsMixer = Vue.extend({
     components: {
         ProductsMixChart, Loader
     },
-    mixins: [FilterUtil, WatchComp, WatchMonth],
+    mixins: [FilterUtil, WatchComp, WatchMonth, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
-            error: false,
             chartData: {},
             promise: {},
             colors: []
@@ -45,14 +46,16 @@ const MonthsMixer = Vue.extend({
         styles: Object
     },
     methods: {
-        onError(status: number) {
-            this.loaded = false;
-            this.error = status > 0;
-        },
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
+            this.empty = false;
             const products: Map<string, string> = this.products;
             let rawData: Record[] = this.rawData;
+
+            if (rawData.length < 1) {
+                this.empty = true;
+                return;
+            }
             const lastDate = rawData[rawData.length - 1].fecha;
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const lastMonth = parseInt(lastDate.split("-")[1], 10);
@@ -67,7 +70,7 @@ const MonthsMixer = Vue.extend({
             months.forEach((month, key) => {
                 const vols: number[] = [];
                 let total: number = 0;
-                const fmt = `${lastYear}-${month < 10 ? '0' : ''}${month}-01`
+                const fmt = `${lastYear}-${month < 10 ? '0' : ''}${month}-01`;
                 products.forEach((prd, prdKey) => {
                     const vol =  rawData.filter(item => item.fecha === fmt &&
                                                 item.producto === prdKey)
@@ -103,24 +106,33 @@ const MonthsMixer = Vue.extend({
                 labels: labels.months,
                 datasets
             };
-        }
-    },
-    watch: {
-        products() {
-            this.promise.then(this.updateChart)
+        },
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "salesm/by_product/" + this.year)
+                        .then(this.updateChart)
                         .catch(this.onError);
         }
     },
+    watch: {
+        year() {
+            this.requestData();
+        }
+    },
     computed: {
+        year() {
+            return this.$store.getters.getYear;
+        },
         products() {
             return this.$store.getters["sales/getProducts"];
         },
         rawData() {
-            return this.$store.getters["sales/getData"]("salesm/by_product");
+            return this.$store.getters["sales/getData"]("salesm/by_product/" + this.year);
         }
     },
     mounted() {
-        this.promise = this.$store.dispatch("sales/fetchByName", "salesm/by_product");
+        if (this.year > 0) {
+            this.requestData();
+        }
     }
 });
 

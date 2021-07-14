@@ -7,19 +7,21 @@ import { CategorySalesMMonths } from './CategoryMonths';
 import { ClientMixer } from './ClientMixer';
 import { CompanyMixer } from './CompanyMixer';
 import { MonthsMixer } from './MonthsMixer';
-import FilterMonth from './FilterMonth';
-import FilterCompany from './FilterCompany';
+import { FilterMonth, FilterCompany, FilterYear} from '../filters';
+import Loader from './Loader';
 
 
 const template = `
 <div class="column-24">
     <div class="column-4">
     <aside class="side-nav">
+        <FilterYear />
         <FilterMonth />
         <FilterCompany />
     </aside>
     </div>
-    <div class="column-20 ">
+    <Loader v-if="!loaded && !error"/>
+    <div class="column-20 " v-if="loaded">
         <h2 class="text-rule">Mezcladoras - Ventas de combustibles</h2>
         <div class="column-20 leader-1">
             <CompanyShare header="Participación en venta $title de combustibles (%)" type="TOTAL" xclass="column-6" :styles="{height: '300px'}"/>
@@ -32,7 +34,7 @@ const template = `
             <CategorySalesMTime header="Ventas por Mes $year (millones de litros)" xclass="column-8" :styles="{height: '240px'}"/>
         </div>
         <div class="column-20 leader-1">
-            <MonthsMixer header="Ventas por mes por produtos (millones de litros)" xclass="column-7" :styles="{height: '500px'}"/>
+            <MonthsMixer header="Ventas por mes por productos (millones de litros)" xclass="column-7" :styles="{height: '500px'}"/>
             <CompanyMixer header="Ventas de combustible por mezcladoras (millones de litros)" xclass="column-7" :styles="{height: '500px'}"/>
             <ClientMixer header="Ventas de combustible por destino (millones de litros)" xclass="column-6" :styles="{height: '480px'}"/>
         </div>
@@ -48,9 +50,19 @@ const Plantsboard = Vue.extend({
     components: {
         CompanyShare, CategorySalesMix, ProductSalesMix, CategorySalesMTime,
         ClientMixer, CompanyMixer, MonthsMixer, CategorySalesMMonths,
-        FilterMonth, FilterCompany
+        FilterMonth, FilterCompany, FilterYear, Loader
     },
-    template
+    template,
+    data() {
+        return {
+            loaded: false,
+            error: false
+        };
+    },
+    mounted() {
+        this.$store.dispatch("fetchYearRange", "salesm")
+                   .then(() => { this.loaded = true; });
+    }
 });
 
 export default Plantsboard;

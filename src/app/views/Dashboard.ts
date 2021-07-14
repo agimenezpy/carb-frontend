@@ -6,20 +6,22 @@ import { CategoryImportTime } from './CategoryTime';
 import { CategoryImportMonths } from './CategoryMonths';
 import { PriceImportMonths } from './PriceMonths';
 import CategoryYears from './CategoryYears';
-import FilterMonth from './FilterMonth';
-import FilterCompany from './FilterCompany';
+import {FilterMonth, FilterCompany, FilterYear } from '../filters/';
 import Country from './Country';
+import Loader from './Loader';
 
 
 const template = `
 <div class="column-24">
     <div class="column-4">
-    <aside class="side-nav">
+    <aside class="side-nav" >
+        <FilterYear />
         <FilterMonth />
-        <FilterCompany />
+        <FilterCompany/>
     </aside>
     </div>
-    <div class="column-20">
+    <Loader v-if="!loaded && !error"/>
+    <div class="column-20" v-if="loaded">
         <h2 class="text-rule">Importación de combustibles</h2>
         <div class="column-20 leader-1">
             <ProductImport header="Importación por Producto (litros)" xclass="column-6" :styles="{height: '240px'}"/>
@@ -54,9 +56,19 @@ const Dashboard = Vue.extend({
     components: {
         ProductImport, CategoryImport, CompanyImport,
         CategoryImportTime, CategoryImportMonths, CategoryYears, PriceImportMonths,
-        FilterMonth, FilterCompany, Country
+        FilterMonth, FilterCompany, FilterYear, Country, Loader
     },
-    template
+    template,
+    data() {
+        return {
+            loaded: false,
+            error: false
+        };
+    },
+    mounted() {
+        this.$store.dispatch("fetchYearRange", "import")
+                   .then(() => {this.loaded = true; });
+    }
 });
 
 export default Dashboard;

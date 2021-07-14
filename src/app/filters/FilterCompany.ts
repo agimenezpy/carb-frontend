@@ -34,24 +34,23 @@ const FilterCompany = Vue.extend({
     watch: {
         companies(companies: Map<number, string>) {
             if (companies.size > 0) {
-                const rawData = this.$store.getters.getComData;
+                const rawData = this.$store.getters["imports/getData"]("import/by_company/" + this.year);
                 this.setCompanies(companies, rawData);
             }
         },
         companiesSales(companies: Map<number, string>) {
             if (companies.size > 0) {
-                let rawData = this.$store.getters["sales/getData"]("sales/by_category");
-                if (rawData === undefined) {
-                    rawData = this.$store.getters["sales/getData"]("salesm/by_category");
-                }
+                const rawData = this.$store.getters["sales/getData"](`${this.page}/by_category/${this.year}`);
                 this.setCompanies(companies, rawData);
             }
         }
     },
     computed: {
         ...mapGetters({
-            companies: 'getCompanies',
-            companiesSales: 'sales/getCompanies'
+            page: "getPage",
+            year: "getYear",
+            companies: "imports/getCompanies",
+            companiesSales: "sales/getCompanies",
         })
     },
     methods: {

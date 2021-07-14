@@ -1,14 +1,20 @@
 import Vue from 'vue';
 import Loader from './Loader';
 import { CountryChart, ColorSchemes } from '../charts';
-import { Record } from './mixins';
+import { Record, CardUtil } from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <div class="font-size--3">{{header.replace("$title", title)}}</div>
-            <Loader v-if="!loaded"/>
-            <country-chart v-if="loaded" :chart-data="chartData" :title="title" :aspect="aspect" :styles="styles"></country-chart>
+            <Loader v-if="!loaded && !error && !empty"/>
+            <div class="alert alert-red modifier-class is-active" v-if="error">
+                Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
+            </div>
+            <country-chart v-if="loaded && !empty" :chart-data="chartData" :title="title" :aspect="aspect" :styles="styles"></country-chart>
         </div>
     </div>
 </div>`;
@@ -18,10 +24,10 @@ const Country = Vue.extend({
     components: {
         CountryChart, Loader
     },
+    mixins: [CardUtil],
     template,
     data() {
         return {
-            loaded: false,
             chartData: {},
             colors: [],
             promise: {},
@@ -38,6 +44,7 @@ const Country = Vue.extend({
     methods: {
         updateChart() {
             this.loaded = false;
+            this.empty = false;
             const countries: Map<string, string> = this.countries;
             const categories: Map<string, string> = this.categories;
             const rawData: Record[] = this.rawData;
@@ -55,7 +62,12 @@ const Country = Vue.extend({
             });
             this.title = categories.get(this.type);
             this.loaded = true;
-            this.setChartData(labels, volumes);
+            if (volumes.length > 0) {
+                this.setChartData(labels, volumes);
+            }
+            else {
+                this.empty = true;
+            }
         },
         setChartData(labels: string[], volumes: number[]) {
             this.chartData = {
@@ -68,28 +80,40 @@ const Country = Vue.extend({
                     }
                 ]
             };
+        },
+        requestData() {
+            this.$store.dispatch("imports/fetchByName", "by_country/" + this.year)
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     },
     watch: {
         categories() {
-            this.promise.then(this.updateChart);
+            if (this.year > 0) {
+                this.requestData();
+            }
+        },
+        year() {
+            this.requestData();
         }
     },
     computed: {
+        year() {
+            return this.$store.getters.getYear;
+        },
         countries() {
             return this.$store.getters["imports/getCountries"];
         },
         categories() {
-            return this.$store.getters.getCategories;
+            return this.$store.getters["imports/getCategories"];
         },
         rawData() {
-            return this.$store.getters["imports/getData"]("import/by_country");
+            return this.$store.getters["imports/getData"]("import/by_country/" + this.year);
         }
     },
     mounted() {
         const schemes = ColorSchemes.getColorSchemes();
         this.colors = [schemes.office.Blue6, schemes.office.Orange6];
-        this.promise = this.$store.dispatch("imports/fetchByName", "by_country");
     }
 });
 

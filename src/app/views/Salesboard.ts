@@ -7,21 +7,22 @@ import { DepartmentSales } from './Department';
 import { StationCompany, StationDepartment } from './Station';
 import { StationMap } from './StationMap';
 import SalesPrice from './SalesPrice';
-import FilterMonth from './FilterMonth';
-import FilterCompany from './FilterCompany';
-import FilterDepartment from './FilterDepartment';
+import { FilterMonth, FilterCompany, FilterDepartment, FilterYear} from '../filters';
+import Loader from './Loader';
 
 
 const template = `
 <div class="column-24">
     <div class="column-4">
     <aside class="side-nav">
+        <FilterYear />
         <FilterMonth />
         <FilterCompany />
         <FilterDepartment />
     </aside>
     </div>
-    <div class="column-20">
+    <Loader v-if="!loaded && !error"/>
+    <div class="column-20" v-if="loaded">
         <h2 class="text-rule">Ventas de combustibles</h2>
         <div class="column-20 leader-1">
             <ProductSales header="Ventas por Producto (litros)" xclass="column-5" :styles="{height: '290px'}"/>
@@ -54,9 +55,20 @@ const Salesboard = Vue.extend({
     name: "Salesboard",
     components: {
         ProductSales, CategorySalesTime, CategorySalesMonths, CompanySales, DepartmentSales,
-        FilterMonth, FilterCompany, FilterDepartment, StationCompany, StationDepartment, StationMap, SalesPrice
+        FilterMonth, FilterCompany, FilterDepartment, FilterYear,
+        StationCompany, StationDepartment, StationMap, SalesPrice, Loader
     },
-    template
+    template,
+    data() {
+        return {
+            loaded: false,
+            error: false
+        };
+    },
+    mounted() {
+        this.$store.dispatch("fetchYearRange", "sales")
+                  .then(() => { this.loaded = true; });
+    }
 });
 
 export default Salesboard;

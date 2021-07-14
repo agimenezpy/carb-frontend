@@ -1,17 +1,20 @@
 import Vue from 'vue';
 import Loader from './Loader';
 import { PriceMonthsChart  } from '../charts';
-import { FilterUtil, FilterObj, Record, WatchMonth } from './mixins';
+import { FilterUtil, FilterObj, Record, WatchMonth, CardUtil} from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <div class="font-size--3">{{header.replace("$title", title)}}</div>
-            <Loader v-if="!loaded && !error"/>
+            <Loader v-if="!loaded && !error && !empty"/>
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
             </div>
-            <price-months-chart v-if="loaded" :chart-data="chartData" :styles="styles"></price-months-chart>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
+            </div>
+            <price-months-chart v-if="loaded && !empty" :chart-data="chartData" :styles="styles"></price-months-chart>
         </div>
     </div>
 </div>`;
@@ -25,14 +28,12 @@ const PriceMonths = Vue.extend({
     components: {
         PriceMonthsChart, Loader
     },
-    mixins: [FilterUtil, WatchMonth],
+    mixins: [FilterUtil, WatchMonth, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
             title: "",
-            chartData: {},
-            error: false
+            chartData: {}
         };
     },
     props: {
@@ -42,14 +43,16 @@ const PriceMonths = Vue.extend({
         styles: Object
     },
     methods: {
-        onError(status: number) {
-            this.loaded = false;
-            this.error = status > 0;
-        },
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
+            this.empty = false;
             const products: Map<string, string> = this.products;
             const rawData: Record[][] = this.rawData;
+
+            if (rawData.length < 2 || rawData[0].length === 0 || rawData[1].length === 0) {
+                this.empty = true;
+                return;
+            }
 
             const lastDate = rawData[1][rawData[1].length - 1].fecha;
             const lastYear = parseInt(lastDate.split("-")[0], 10);
@@ -104,18 +107,25 @@ const PriceMonths = Vue.extend({
             };
         }
     },
+    watch: {
+        year() {
+            this.requestData();
+        }
+    },
+    computed: {
+        year() {
+            return this.$store.getters.getYear;
+        }
+    },
     mounted() {
-        this.requestData();
+        if (this.year > 0) {
+            this.requestData();
+        }
     }
 });
 
 const PriceImportMonths = Vue.extend({
     extends: PriceMonths,
-    data() {
-        return {
-            year: 2020
-        };
-    },
     computed: {
         products() {
             return this.$store.getters.getPriProducts;
@@ -129,7 +139,9 @@ const PriceImportMonths = Vue.extend({
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByPrice", this.year).then(this.updateChart).catch(this.onError);
+            this.$store.dispatch("fetchByPrice", this.year)
+                        .then(this.updateChart)
+                        .catch(this.onError);
         }
     }
 });

@@ -1,15 +1,18 @@
 import Vue from 'vue';
 import { ProductChart, ColorSchemes } from '../charts';
 import Loader from './Loader';
-import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp, WatchDepto} from './mixins';
+import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp, WatchDepto, CardUtil} from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
             <div class="font-size--3">{{header}}</div>
-            <Loader v-if="!loaded && !error"/>
+            <Loader v-if="!loaded && !error && !empty"/>
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
             </div>
             <product-chart v-if="loaded" :chart-data="chartData" :aspect="aspect" :styles="styles"></product-chart>
         </div>
@@ -21,13 +24,11 @@ const Product = Vue.extend({
     components: {
         ProductChart, Loader
     },
-    mixins: [FilterUtil, WatchMonth, WatchComp, WatchDepto],
+    mixins: [FilterUtil, WatchMonth, WatchComp, WatchDepto, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
             chartData: {},
-            error: false,
             colors: [],
             div: 1,
             split: false
@@ -40,10 +41,6 @@ const Product = Vue.extend({
         styles: Object
     },
     methods: {
-        onError(status: number) {
-            this.loaded = false;
-            this.error = status > 0;
-        },
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
             const products: Map<string, string> = this.products;
@@ -66,7 +63,8 @@ const Product = Vue.extend({
                 }
             });
             this.setChartData(labels, volumes);
-            this.loaded = true;
+            this.loaded = volumes.length > 0;
+            this.empty = volumes.length < 1;
         },
         setChartData(labels: string[], volumes: number[]) {
             if (this.split) {
@@ -97,9 +95,23 @@ const Product = Vue.extend({
             }
         }
     },
+    watch: {
+        year() {
+            this.requestData();
+        }
+    },
+    computed: {
+        year() {
+            return this.$store.getters.getYear;
+        }
+    },
     mounted() {
         const schm = ColorSchemes.getColorSchemes();
         this.colors = schm.office.Blue6.slice(0, 2).concat(schm.office.Orange6);
+
+        if (this.year > 0) {
+            this.requestData();
+        }
     }
 });
 
@@ -109,18 +121,20 @@ const ProductImport = Vue.extend({
     methods: {
         doFilter(filters: FilterObj, rawData: Record[]) {
             return this.filterDualData(filters, rawData);
+        },
+        requestData() {
+            this.$store.dispatch("imports/fetchByName", "by_product/" + this.year)
+            .then(this.updateChart)
+            .catch(this.onError);
         }
     },
     computed: {
         products() {
-            return this.$store.getters.getProducts;
+            return this.$store.getters["imports/getProducts"];
         },
         rawData() {
-            return this.$store.getters.getProdData;
+            return this.$store.getters["imports/getData"]("import/by_product/" + this.year);
         }
-    },
-    mounted() {
-        this.$store.dispatch("fetchByProduct").then(this.updateChart);
     }
 });
 
@@ -130,6 +144,11 @@ const ProductSales = Vue.extend({
     methods: {
         doFilter(filters: FilterObj, rawData: Record[]) {
             return this.filterData(filters, rawData);
+        },
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "by_product/" + this.year)
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     },
     computed: {
@@ -137,13 +156,8 @@ const ProductSales = Vue.extend({
             return this.$store.getters["sales/getProducts"];
         },
         rawData() {
-            return this.$store.getters["sales/getData"]("sales/by_product");
+            return this.$store.getters["sales/getData"]("sales/by_product/" + this.year);
         }
-    },
-    mounted() {
-        this.$store.dispatch("sales/fetchByName", "by_product")
-                   .then(this.updateChart)
-                   .catch(this.onError);
     }
 });
 
@@ -159,6 +173,11 @@ const ProductSalesMix = Vue.extend({
     methods: {
         doFilter(filters: FilterObj, rawData: Record[]) {
             return this.filterData(filters, rawData);
+        },
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "salesm/by_product/" + this.year)
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     },
     computed: {
@@ -166,13 +185,8 @@ const ProductSalesMix = Vue.extend({
             return this.$store.getters["sales/getProducts"];
         },
         rawData() {
-            return this.$store.getters["sales/getData"]("salesm/by_product");
+            return this.$store.getters["sales/getData"]("salesm/by_product/" + this.year);
         }
-    },
-    mounted() {
-        this.$store.dispatch("sales/fetchByName", "salesm/by_product")
-                   .then(this.updateChart)
-                   .catch(this.onError);
     }
 });
 

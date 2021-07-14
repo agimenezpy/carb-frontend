@@ -1,14 +1,20 @@
 import Vue from 'vue';
 import Loader from './Loader';
 import { CategoryChart, ColorSchemes } from '../charts';
-import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp } from './mixins';
+import { FilterUtil, FilterObj, Record, WatchMonth, WatchComp, CardUtil } from './mixins';
 
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <div class="font-size--3">{{header.replace("$title", title)}}</div>
-            <Loader v-if="!loaded"/>
+            <Loader v-if="!loaded && !error && !empty"/>
+            <div class="alert alert-red modifier-class is-active" v-if="error">
+                Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
+            </div>
             <category-chart v-if="loaded" :chart-data="chartData" :title="title" :aspect="aspect" :styles="styles"></category-chart>
         </div>
     </div>
@@ -19,11 +25,10 @@ const Category = Vue.extend({
     components: {
         CategoryChart, Loader
     },
-    mixins: [FilterUtil, WatchMonth, WatchComp],
+    mixins: [FilterUtil, WatchMonth, WatchComp, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
             chartData: {},
             colors: [],
             title: ""
@@ -61,7 +66,8 @@ const Category = Vue.extend({
             this.title = (this.type === "TOTAL") ?
                          Array.from(categories.values()).join(" y ") :
                          categories.get(this.type) ;
-            this.loaded = true;
+            this.loaded = volumes.length > 0;
+            this.empty = volumes.length < 1;
             this.setChartData(labels, volumes);
         },
         setChartData(labels: string[], volumes: number[]) {
@@ -78,8 +84,20 @@ const Category = Vue.extend({
             };
         }
     },
+    watch: {
+        year() {
+            this.requestData();
+        }
+    },
+    computed: {
+        year() {
+            return this.$store.getters.getYear;
+        }
+    },
     mounted() {
-        this.requestData();
+        if (this.year > 0) {
+            this.requestData();
+        }
     }
 });
 
@@ -96,15 +114,17 @@ const CategoryImport = Vue.extend({
     },
     computed: {
         categories() {
-            return this.$store.getters.getCategories;
+            return this.$store.getters["imports/getCategories"];
         },
         rawData() {
-            return this.$store.getters.getComData;
+            return this.$store.getters["imports/getData"]("import/by_company/" + this.year);
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByCompany").then(this.updateChart);
+            this.$store.dispatch("imports/fetchByName", "by_company/" + this.year)
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     }
 });
@@ -124,12 +144,12 @@ const CategorySalesMix = Vue.extend({
             return this.$store.getters["sales/getCategories"];
         },
         rawData() {
-            return this.$store.getters["sales/getData"]("salesm/by_category");
+            return this.$store.getters["sales/getData"]("salesm/by_category/" + this.year);
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("sales/fetchByName", "salesm/by_category")
+            this.$store.dispatch("sales/fetchByName", "salesm/by_category/" + this.year)
                        .then(this.updateChart)
                        .catch(this.onError);
         }

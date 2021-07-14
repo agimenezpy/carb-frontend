@@ -1,13 +1,19 @@
 import Vue from 'vue';
 import { CompanyChart } from '../charts';
 import Loader from './Loader';
-import { FilterUtil, FilterObj, Record, WatchComp, WatchMonth, WatchDepto } from './mixins';
+import { FilterUtil, FilterObj, Record, WatchComp, WatchMonth, WatchDepto, CardUtil } from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
             <span class="font-size--3">{{header}}</span>
-            <Loader v-if="!loaded"/>
+            <Loader v-if="!loaded && !error && !empty"/>
+            <div class="alert alert-red modifier-class is-active" v-if="error">
+                Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
+            </div>
             <company-chart v-if="loaded" :chart-data="chartData" :styles="styles"></company-chart>
         </div>
     </div>
@@ -23,11 +29,10 @@ const Company = Vue.extend({
     components: {
         CompanyChart, Loader
     },
-    mixins: [FilterUtil],
+    mixins: [FilterUtil, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
             chartData: {}
         };
     },
@@ -39,10 +44,16 @@ const Company = Vue.extend({
     methods: {
         updateChart(filters: FilterObj = {}){
             this.loaded = false;
+            this.empty = false;
             const companies: Map<number, string> = this.companies;
             const category: Map<string, string> = this.categories;
             let rawData: Record[] = this.rawData;
             const fComp = filters.fComp;
+
+            if (rawData.length < 1) {
+                this.empty = true;
+                return;
+            }
 
             const labels: Labels = {
                 "companies": new Array<string>(),
@@ -90,8 +101,20 @@ const Company = Vue.extend({
             };
         }
     },
+    watch: {
+        year() {
+            this.requestData();
+        }
+    },
+    computed: {
+        year() {
+            return this.$store.getters.getYear;
+        }
+    },
     mounted() {
-        this.requestData();
+        if (this.year > 0) {
+            this.requestData();
+        }
     }
 });
 
@@ -100,13 +123,13 @@ const CompanyImport = Vue.extend({
     mixins: [WatchComp, WatchMonth],
     computed: {
         companies() {
-            return this.$store.getters.getCompanies;
+            return this.$store.getters["imports/getCompanies"];
         },
         categories() {
-            return this.$store.getters.getCategories;
+            return this.$store.getters["imports/getCategories"];
         },
         rawData() {
-            return this.$store.getters.getComData;
+            return this.$store.getters["imports/getData"]("import/by_company/" + this.year);
         }
     },
     methods: {
@@ -114,7 +137,9 @@ const CompanyImport = Vue.extend({
             return this.filterMonthData(filters, rawData);
         },
         requestData() {
-            this.$store.dispatch("fetchByCompany").then(this.updateChart);
+            this.$store.dispatch("imports/fetchByName", "by_company/" + this.year)
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     }
 });
@@ -130,12 +155,14 @@ const CompanySales = Vue.extend({
             return this.$store.getters["sales/getCategories"];
         },
         rawData() {
-            return this.$store.getters["sales/getData"]("sales/by_category");
+            return this.$store.getters["sales/getData"]("sales/by_category/" + this.year);
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("sales/fetchByName", "by_category").then(this.updateChart);
+            this.$store.dispatch("sales/fetchByName", "by_category/" + this.year)
+                       .then(this.updateChart)
+                       .catch(this.onError);
         }
     }
 });

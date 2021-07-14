@@ -1,11 +1,17 @@
 import Vue from 'vue';
 import { StationChart } from '../charts';
 import Loader from './Loader';
-import { FilterUtil, FilterObj, Record, WatchComp, WatchDepto} from './mixins';
+import { FilterUtil, FilterObj, Record, WatchComp, WatchDepto, CardUtil} from './mixins';
 
 const template = `<div :class="[xclass]">
             <span class='font-size--3'>EESS y PCP por {{header}}</span>
-            <Loader v-if="!loaded"/>
+            <Loader v-if="!loaded && !error && !empty"/>
+            <div class="alert alert-red modifier-class is-active" v-if="error">
+                Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
+            </div>
             <station-chart v-if="loaded" :chart-data="chartData" :aspect="aspect" :styles="styles"></station-chart>
     </div>
 </div>`;
@@ -15,13 +21,13 @@ const Station = Vue.extend({
     components: {
         StationChart, Loader
     },
-    mixins: [FilterUtil, WatchComp, WatchDepto],
+    mixins: [FilterUtil, WatchComp, WatchDepto, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
             chartData: {},
-            promise: {}
+            promise: {},
+            year: 2020
         };
     },
     props: {
@@ -74,7 +80,7 @@ const Station = Vue.extend({
     },
     watch: {
         grouping() {
-            this.promise.then(this.updateChart);
+            this.promise.then(this.updateChart).catch(this.onError);
         }
     },
     computed: {

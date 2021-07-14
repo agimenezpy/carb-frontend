@@ -1,15 +1,18 @@
 import Vue from 'vue';
 import Loader from './Loader';
 import { ClientMixChart } from '../charts';
-import { FilterObj, FilterUtil, Record, WatchComp, WatchMonth } from './mixins';
+import { CardUtil, FilterObj, FilterUtil, Record, WatchComp, WatchMonth } from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
             <div class="font-size--3">{{header.replace("$title", title)}}</div>
-            <Loader v-if="!loaded && !error"/>
+            <Loader v-if="!loaded && !error && !empty"/>
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
             </div>
             <client-mix-chart v-if="loaded" :chart-data="chartData" :title="title" :aspect="aspect" :styles="styles"></client-mix-chart>
         </div>
@@ -26,12 +29,10 @@ const ClientMixer = Vue.extend({
     components: {
         ClientMixChart, Loader
     },
-    mixins: [FilterUtil, WatchComp, WatchMonth],
+    mixins: [FilterUtil, WatchComp, WatchMonth, CardUtil],
     template,
     data() {
         return {
-            loaded: false,
-            error: false,
             chartData: {},
             promise: {},
             title: ""
@@ -45,15 +46,17 @@ const ClientMixer = Vue.extend({
         styles: Object
     },
     methods: {
-        onError(status: number) {
-            this.loaded = false;
-            this.error = status > 0;
-        },
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
+            this.empty = false;
             const clients: string[] = [];
             const categories: Map<string, string> = this.categories;
             let rawData: Record[] = this.rawData;
+
+            if (rawData.length < 1) {
+                this.empty = true;
+                return;
+            }
 
             if (!this.isEmpty(filters)) {
                 rawData = this.filterDualData(filters, rawData);
@@ -103,24 +106,33 @@ const ClientMixer = Vue.extend({
                     data: volumes.map((item: any) => (item[1]))
                 }]
             };
+        },
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "salesm/by_client/" + this.year)
+                    .then(this.updateChart)
+                    .catch(this.onError);
         }
     },
     watch: {
-        categories() {
-            this.promise.then(this.updateChart)
-                        .catch(this.onError);
+        year() {
+            this.requestData();
         }
     },
     computed: {
+        year() {
+            return this.$store.getters.getYear;
+        },
         categories() {
             return this.$store.getters["sales/getCategories"];
         },
         rawData() {
-            return this.$store.getters["sales/getData"]("salesm/by_client");
+            return this.$store.getters["sales/getData"]("salesm/by_client/" + this.year);
         }
     },
     mounted() {
-        this.promise = this.$store.dispatch("sales/fetchByName", "salesm/by_client");
+        if (this.year > 0) {
+            this.requestData();
+        }
     }
 });
 

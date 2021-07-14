@@ -127,7 +127,7 @@ const SalesStore = {
                     if (response.data.emblema !== undefined) {
                         context.commit("setEmblem", response.data.emblema);
                     }
-                    resolve();
+                    resolve({});
                     context.state.requests.delete(api);
                 })
                 .catch((error) => {
@@ -152,7 +152,7 @@ const SalesStore = {
                             data: response.data
                         });
                     }
-                    resolve();
+                    resolve({});
                     context.state.requests.delete(api);
                 })
                 .catch((error) => {

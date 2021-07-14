@@ -18,7 +18,8 @@ module.exports = (env, options) => {
     },
     devServer: {
       proxy: {
-        '/api': (options.mode !== 'productiond') ? 'http://127.0.0.1:8081/' : 'http://gis.mic.gov.py/'
+        '/api': (options.mode !== 'production') ? 'http://127.0.0.1:8081/' : 'http://gis.mic.gov.py/',
+        changeOrigin: false
       }
     },
     optimization: {

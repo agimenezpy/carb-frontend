@@ -20,7 +20,10 @@ const ImportStore = {
     state: {
         status: "",
         data: new Map(),
+        producto: new Map(),
         categoria: new Map(),
+        pais: new Map(),
+        distribuidor: new Map(),
         requests: new Map()
     },
     mutations: {
@@ -98,7 +101,7 @@ const ImportStore = {
                     if (response.data.distribuidor !== undefined) {
                         context.commit("setCompanies", response.data.distribuidor);
                     }
-                    resolve();
+                    resolve({});
                     context.state.requests.delete(api);
                 })
                 .catch((error) => {

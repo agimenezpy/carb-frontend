@@ -1,13 +1,19 @@
 import Vue from 'vue';
 import { GeoMapChart, getTopoJSON, TopoJSONType, ColorSchemes} from '../charts';
 import Loader from './Loader';
-import { FilterUtil, FilterObj, Record, WatchComp} from './mixins';
+import { FilterUtil, FilterObj, Record, WatchComp, CardUtil} from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class="card-content">
             <div class="font-size--3">{{header}}</div>
-            <Loader v-if="!loaded"/>
+            <Loader v-if="!loaded && !error && !empty"/>
+            <div class="alert alert-red modifier-class is-active" v-if="error">
+                Error al obtener datos
+            </div>
+            <div class="alert alert-yellow modifier-class is-active" v-if="empty">
+                Sin datos
+            </div>
             <geo-map-chart v-if="loaded" :chart-data="chartData" :aspect="aspect" :styles="styles"></geo-map-chart>
         </div>
     </div>
@@ -18,7 +24,7 @@ const StationMap = Vue.extend({
     components: {
         GeoMapChart, Loader
     },
-    mixins: [FilterUtil, WatchComp],
+    mixins: [FilterUtil, WatchComp, CardUtil],
     template,
     data() {
         return {

@@ -10,13 +10,14 @@ export interface Record {
 
 function cleanNames(item: string): any {
     let result = item;
-    const regex = / (PARAGUAY|SACIA|SAECA|SAE|SRL|SA)/gi;
-    result = result.replace(regex, "")
-                   .replace(/.* \(([A-Za-z ]+)\)/gi, "\$1")
+    const regex = / (SACIA|SAECA|SAE|SRL|SA)$/gi;
+    result = result.replace(/.* \(([A-Za-z ]+)\)/gi, "\$1")
                    .replace(/([A-Za-z]+)CARBUROS DEL ([A-Za-z]+)/gi, "\$1\$2")
                    .replace(/COMBUSTIBLES ([A-Za-z]+) .*/gi, "\$1")
                    .replace("DISTRIBUIDOR", "")
-                   .replace(" ENERGY", "");
+                   .replace(" PARAGUAY", "")
+                   .replace(" ENERGY", "")
+                   .replace(regex, "");
     return result;
 }
 
@@ -141,6 +142,22 @@ const WatchDepto = {
     }
 };
 
+const CardUtil = {
+    data() {
+        return {
+            loaded: false,
+            empty: false,
+            error: false
+        };
+    },
+    methods: {
+        onError(status: number) {
+            this.loaded = false;
+            this.error = status > 0;
+        }
+    }
+};
+
 export {
-    FilterUtil, WatchMonth, WatchComp, WatchDepto, cleanNames, cleanProducts
+    FilterUtil, WatchMonth, WatchComp, WatchDepto, cleanNames, cleanProducts, CardUtil
 };
