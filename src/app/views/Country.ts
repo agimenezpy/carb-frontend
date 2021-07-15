@@ -44,7 +44,6 @@ const Country = Vue.extend({
     methods: {
         updateChart() {
             this.loaded = false;
-            this.empty = false;
             const countries: Map<string, string> = this.countries;
             const categories: Map<string, string> = this.categories;
             const rawData: Record[] = this.rawData;
@@ -61,13 +60,8 @@ const Country = Vue.extend({
                 }
             });
             this.title = categories.get(this.type);
+            this.setChartData(labels, volumes);
             this.loaded = true;
-            if (volumes.length > 0) {
-                this.setChartData(labels, volumes);
-            }
-            else {
-                this.empty = true;
-            }
         },
         setChartData(labels: string[], volumes: number[]) {
             this.chartData = {

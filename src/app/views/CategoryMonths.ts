@@ -45,16 +45,15 @@ const CategoryMonths = Vue.extend({
     methods: {
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
-            this.empty = false;
             const categories: Map<string, string> = this.categories;
-            const rawData: Record[][] = this.rawData;
+            let rawData: Record[][] = [[], []];
 
-            if (rawData.length < 2 || rawData[0].length === 0 || rawData[1].length === 0) {
-                this.empty = true;
-                return;
+            let lastDate = `${this.year}-12-1`;
+            if (this.rawData.length > 1 && this.rawData[0].length > 0 && this.rawData[1].length > 0) {
+                rawData = this.rawData;
+                lastDate = rawData[1][rawData[1].length - 1].fecha;
             }
 
-            const lastDate = rawData[1][rawData[1].length - 1].fecha;
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const lastMonth = parseInt(lastDate.split("-")[1], 10);
             const months: number[] = Array.from(Array(lastMonth + 1).keys()).slice(1);
@@ -66,7 +65,7 @@ const CategoryMonths = Vue.extend({
                 "years": years
             };
             const fMonth = filters.fMonth;
-            if (fMonth !== undefined) {
+            if (fMonth !== undefined && rawData[0].length > 0 && rawData[1].length > 0) {
                 labels.months = fMonth.map((item: number) => this.MONTHS[item - 1]);
             }
 

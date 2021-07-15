@@ -48,17 +48,15 @@ const CompanyMixer = Vue.extend({
     methods: {
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
-            this.empty = false;
             const companies: Map<number, string> = this.companies;
             const products: Map<string, string> = this.products;
             let rawData: Record[] = this.rawData;
 
-            if (rawData.length < 1) {
-                this.empty = true;
-                return;
+            if (this.rawData.length > 0) {
+                rawData = this.rawData;
             }
 
-            if (!this.isEmpty(filters)) {
+            if (!this.isEmpty(filters) && rawData.length > 0) {
                 rawData = this.filterDualData(filters, rawData);
             }
 

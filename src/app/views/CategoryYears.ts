@@ -55,27 +55,24 @@ const CategoryYears = Vue.extend({
         },
         updateChart(filters: object = {}) {
             this.loaded = false;
-            this.empty = false;
             const categories: Map<string, string> = this.$store.getters["imports/getCategories"];
-            const rawData: Record[][] = [
-                this.$store.getters["imports/getData"](`import/by_month/${this.year - 1}`),
-                this.$store.getters["imports/getData"](`import/by_month/${this.year}`)
-            ];
+            let rawData: Record[][] = [[], []];
 
-            if (rawData.length < 2 || rawData[0].length === 0 || rawData[1].length === 0) {
-                this.empty = true;
-                return;
+            let lastDate = `${this.year}-12-1`;
+            if (this.rawData.length > 1 && this.rawData[0].length > 0 && this.rawData[1].length > 0) {
+                rawData = this.rawData;
+                lastDate = rawData[1][rawData[1].length - 1].fecha;
             }
-            const lastDate = rawData[1][rawData[1].length - 1].fecha;
+
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const volumes: object[] = [];
             const years = [lastYear - 1, lastYear];
             const labels: Labels = {
                 "years": years,
-                "categories": Array.from(categories).map(item => (item[1]))
+                "categories": Array.from(categories.values())
             };
 
-            if (!this.isEmpty(filters)) {
+            if (!this.isEmpty(filters) && rawData[0].length > 0 && rawData[1].length > 0) {
                 rawData[0] = this.filterMonthData(filters, rawData[0]);
                 rawData[1] = this.filterMonthData(filters, rawData[1]);
             }
@@ -85,7 +82,9 @@ const CategoryYears = Vue.extend({
                 categories.forEach((id, type) => {
                     const vol = rawData[idx].filter(item => item.categoria === type)
                                             .reduce((sum, item) => sum + item.volumen, 0);
-                    vols.push(vol);
+                    if (vol > 0) {
+                        vols.push(vol);
+                    }
                 });
                 volumes.push(vols);
             });
@@ -99,12 +98,12 @@ const CategoryYears = Vue.extend({
                 datasets: [{
                     backgroundColor: this.colors[0],
                     label: labels.categories[0],
-                    data: volumes.map((item: any) => (item[0]))
+                    data:  volumes[0].length > 0 ? volumes.map((item: any) => (item[0])) : []
                 },
                 {
                     backgroundColor: this.colors[1],
                     label: labels.categories[1],
-                    data: volumes.map((item: any) => (item[1]))
+                    data: volumes[0].length > 0 ? volumes.map((item: any) => (item[1])) : []
                 }]
             };
         }
@@ -117,6 +116,12 @@ const CategoryYears = Vue.extend({
     computed: {
         year() {
             return this.$store.getters.getYear;
+        },
+        rawData() {
+            return [
+                this.$store.getters["imports/getData"](`import/by_month/${this.year - 1}`),
+                this.$store.getters["imports/getData"](`import/by_month/${this.year}`)
+            ];
         }
     },
     mounted() {

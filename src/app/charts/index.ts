@@ -37,6 +37,25 @@ function getTopoJSON() {
 
 const formatter = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
 
+Chart.plugins.register({
+	afterDraw(chart: any) {
+        if (chart.data.datasets.length === 0 || chart.data.datasets[0].data.length === 0) {
+            // No data is present
+            const ctx = chart.chart.ctx;
+            const width = chart.chart.width;
+            const height = chart.chart.height;
+            chart.clear();
+
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = "16px normal 'Arial'";
+            ctx.fillText('Sin datos', width / 2, height / 2);
+            ctx.restore();
+        }
+  }
+});
+
 export {
     ColorSchemes, TopoJSONType, ColorSchemesType, getTopoJSON, formatter,
     CategoryChart, CategoryMonthsChart, StationChart,

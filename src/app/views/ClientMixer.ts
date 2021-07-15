@@ -48,17 +48,15 @@ const ClientMixer = Vue.extend({
     methods: {
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
-            this.empty = false;
             const clients: string[] = [];
             const categories: Map<string, string> = this.categories;
             let rawData: Record[] = this.rawData;
 
-            if (rawData.length < 1) {
-                this.empty = true;
-                return;
+            if (this.rawData.length > 0) {
+                rawData = this.rawData;
             }
 
-            if (!this.isEmpty(filters)) {
+            if (!this.isEmpty(filters) && rawData.length > 0) {
                 rawData = this.filterDualData(filters, rawData);
             }
 

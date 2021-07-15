@@ -50,7 +50,7 @@ const Category = Vue.extend({
             const labels: string[] = [];
             const volumes: number[] = [];
 
-            if (!this.isEmpty(filters)) {
+            if (!this.isEmpty(filters) && rawData.length > 0) {
                 rawData = this.filterDualData(filters, rawData);
             }
 
@@ -64,10 +64,9 @@ const Category = Vue.extend({
             });
 
             this.title = (this.type === "TOTAL") ?
-                         Array.from(categories.values()).join(" y ") :
-                         categories.get(this.type) ;
-            this.loaded = volumes.length > 0;
-            this.empty = volumes.length < 1;
+                         labels.join(" y ") :
+                         categories.get(this.type);
+            this.loaded = true;
             this.setChartData(labels, volumes);
         },
         setChartData(labels: string[], volumes: number[]) {
@@ -76,11 +75,9 @@ const Category = Vue.extend({
                 invert: this.type === "TOTAL" ? undefined : this.type === "GA",
                 legend: this.type === "TOTAL",
                 labels,
-                datasets: [
-                    {
+                datasets: [{
                         data: volumes
-                    }
-                ]
+                }]
             };
         }
     },

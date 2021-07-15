@@ -44,12 +44,16 @@ const Product = Vue.extend({
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
             const products: Map<string, string> = this.products;
-            let rawData: Record[] = this.rawData;
+            let rawData: Record[] = [];
 
             const labels: string[] = [];
             const volumes: number[] = [];
 
-            if (!this.isEmpty(filters)) {
+            if (this.rawData.length > 0) {
+                rawData = this.rawData;
+            }
+
+            if (!this.isEmpty(filters) && rawData.length > 0) {
                 rawData = this.doFilter(filters, rawData);
             }
 
@@ -63,8 +67,7 @@ const Product = Vue.extend({
                 }
             });
             this.setChartData(labels, volumes);
-            this.loaded = volumes.length > 0;
-            this.empty = volumes.length < 1;
+            this.loaded = true;
         },
         setChartData(labels: string[], volumes: number[]) {
             if (this.split) {

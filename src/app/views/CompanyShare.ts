@@ -48,17 +48,15 @@ const CompanyShare = Vue.extend({
     methods: {
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
-            this.empty = false;
             const companies: Map<string, string> = this.companies;
             const categories: Map<string, string> = this.categories;
-            let rawData: Record[] = this.rawData;
+            let rawData: Record[] = [];
 
-            if (rawData.length < 1) {
-                this.empty = true;
-                return;
+            if (this.rawData.length > 0) {
+                rawData = this.rawData;
             }
 
-            if (!this.isEmpty(filters)) {
+            if (!this.isEmpty(filters) && rawData.length > 0) {
                 rawData = this.filterMonthData(filters, rawData);
             }
 

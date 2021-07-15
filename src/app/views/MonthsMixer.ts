@@ -48,19 +48,18 @@ const MonthsMixer = Vue.extend({
     methods: {
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
-            this.empty = false;
             const products: Map<string, string> = this.products;
             let rawData: Record[] = this.rawData;
 
-            if (rawData.length < 1) {
-                this.empty = true;
-                return;
+            let lastDate = `${this.year}-12-1`;
+            if (this.rawData.length > 0) {
+                rawData = this.rawData;
+                lastDate = rawData[rawData.length - 1].fecha;
             }
-            const lastDate = rawData[rawData.length - 1].fecha;
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const lastMonth = parseInt(lastDate.split("-")[1], 10);
 
-            if (!this.isEmpty(filters)) {
+            if (!this.isEmpty(filters) && rawData.length > 0) {
                 rawData = this.filterDualData(filters, rawData);
             }
 

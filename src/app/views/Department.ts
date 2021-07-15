@@ -43,23 +43,21 @@ const Department = Vue.extend({
     methods: {
         updateChart(filters: FilterObj = {}){
             this.loaded = false;
-            this.empty = false;
             const departments: Map<string, string> = this.departments;
             const category: Map<string, string> = this.categories;
-            let rawData: Record[] = this.rawData;
+            let rawData: Record[] = [];
             const fDepto = filters.fDepto;
 
-            if (rawData.length < 1) {
-                this.empty = true;
-                return;
+            if (this.rawData.length > 1) {
+                rawData = this.rawData;
             }
 
             const labels: Labels = {
                 "departaments": new Array<string>(),
-                "categories": Array.from(category).map(item => (item[1]))
+                "categories": Array.from(category.values())
             };
 
-            if (!this.isEmpty(filters)) {
+            if (!this.isEmpty(filters) && rawData.length > 0) {
                 rawData = this.filterData(filters, rawData);
             }
 
