@@ -28,9 +28,14 @@ const Category = Vue.extend({
     mixins: [FilterUtil, WatchMonth, WatchComp, CardUtil],
     template,
     data() {
+        const schemes = ColorSchemes.getColorSchemes();
         return {
             chartData: {},
-            colors: [],
+            colors: {
+                "TOTAL": [schemes.office.Blue6[0], schemes.office.Orange6[0]],
+                "GL": [schemes.office.Blue6[0], schemes.brewer.Blues6[0]],
+                "GA": [schemes.brewer.Oranges6[0], schemes.office.Orange6[0]]
+            },
             title: ""
         };
     },
@@ -100,15 +105,6 @@ const Category = Vue.extend({
 
 const CategoryImport = Vue.extend({
     extends: Category,
-    data() {
-        const schemes = ColorSchemes.getColorSchemes();
-        return {
-            colors: {
-                "GL": [schemes.office.Blue6[0], schemes.brewer.Blues6[0]],
-                "GA": [schemes.brewer.Oranges6[0], schemes.office.Orange6[0]]
-            }
-        };
-    },
     computed: {
         categories() {
             return this.$store.getters["imports/getCategories"];
@@ -128,14 +124,6 @@ const CategoryImport = Vue.extend({
 
 const CategorySalesMix = Vue.extend({
     extends: Category,
-    data() {
-        const schemes = ColorSchemes.getColorSchemes();
-        return {
-            colors: {
-                "TOTAL": [schemes.office.Blue6[0], schemes.office.Orange6[0]],
-            }
-        };
-    },
     computed: {
         categories() {
             return this.$store.getters["sales/getCategories"];

@@ -7,7 +7,7 @@
       "es5",
       "es6"
     ],
-    "target": "es5",
+    "target": "es6",
     "noImplicitAny": true,
     "removeComments": true,
     "jsx": "react",

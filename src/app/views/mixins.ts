@@ -36,6 +36,7 @@ const FilterUtil = {
             const fComp = filters.fComp;
             const fMonth = filters.fMonth;
             const fDepto = filters.fDepto;
+            const fCntry = filters.fCntry;
             let months = "";
             if (fMonth !== undefined) {
                 const lastDate = rawData[rawData.length - 1].fecha;
@@ -45,7 +46,8 @@ const FilterUtil = {
             return rawData.filter(item => (
                                  ((fMonth !== undefined) ? item.fecha.match(months) : true) &&
                                   ((fComp !== undefined) ? fComp.indexOf(item.distribuidor) >= 0 : true)) &&
-                                  ((fDepto !== undefined) ? fDepto.indexOf(item.departamento) >= 0 : true));
+                                  ((fDepto !== undefined) ? fDepto.indexOf(item.departamento) >= 0 : true) &&
+                                  ((fCntry !== undefined) ? fCntry.indexOf(item.pais) >= 0 : true));
 
         },
         filterDualData(filters: FilterObj, rawData: Record[]) {
@@ -142,6 +144,23 @@ const WatchDepto = {
     }
 };
 
+const WatchCntry = {
+    watch: {
+        country(fCntry: number[]) {
+            this.filters.fCntry = undefined;
+            if (fCntry.length < 2) {
+                this.filters.fCntry = fCntry;
+            }
+            this.updateChart(this.filters);
+        }
+    },
+    computed: {
+        ...mapGetters({
+            country: "getFCntry"
+        })
+    }
+};
+
 const CardUtil = {
     data() {
         return {
@@ -159,5 +178,6 @@ const CardUtil = {
 };
 
 export {
-    FilterUtil, WatchMonth, WatchComp, WatchDepto, cleanNames, cleanProducts, CardUtil
+    FilterUtil, WatchMonth, WatchComp, WatchDepto, WatchCntry,
+    cleanNames, cleanProducts, CardUtil
 };

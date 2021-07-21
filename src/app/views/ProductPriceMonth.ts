@@ -6,7 +6,7 @@ import { FilterUtil, FilterObj, Record, WatchMonth, CardUtil} from './mixins';
 const template = `<div :class="[xclass]">
     <div class="card">
         <div class='card-content'>
-            <div class="font-size--3">{{header.replace("$title", title)}}</div>
+            <div class="font-size--3">{{header}}</div>
             <Loader v-if="!loaded && !error && !empty"/>
             <div class="alert alert-red modifier-class is-active" v-if="error">
                 Error al obtener datos
@@ -23,8 +23,8 @@ interface Labels {
     [propName: string]: any;
 }
 
-const PriceMonths = Vue.extend({
-    name: "PriceMonths",
+const ProductPriceMonth = Vue.extend({
+    name: "ProductPriceMonth",
     components: {
         PriceMonthsChart, Loader
     },
@@ -36,8 +36,7 @@ const PriceMonths = Vue.extend({
             title: "",
             chartData: {},
             colors: {
-                "GL": [schemes.office.Blue6[0], schemes.office.Blue6[1]],
-                "GA": [schemes.office.Orange6[1], schemes.office.Orange6[0]]
+                "GS": schemes.office.Office6,
             }
         };
     },
@@ -51,64 +50,60 @@ const PriceMonths = Vue.extend({
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
             const products: Map<string, string> = this.products;
-            let rawData: Record[][] = [[], []];
+            let rawData: Record[] = [];
 
             let lastDate = `${this.year}-12-1`;
-            if (this.rawData.length > 1 && this.rawData[0].length > 0 && this.rawData[1].length > 0) {
+            if (this.rawData.length > 1) {
                 rawData = this.rawData;
-                lastDate = rawData[1][rawData[1].length - 1].fecha;
+                lastDate = rawData[rawData.length - 1].fecha;
             }
 
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const lastMonth = parseInt(lastDate.split("-")[1], 10);
             const months: number[] = Array.from(Array(lastMonth + 1).keys()).slice(1);
-            const years = [lastYear - 1, lastYear];
-            const volumes: object[] = [];
-            this.title = products.get(this.type);
+            const volumes: number[][] = [];
             const labels: Labels = {
                 "months": months.map((item) => this.MONTHS[item - 1]),
-                "years": years
+                "products": Array.from(this.products.values())
             };
             const fMonth = filters.fMonth;
             if (fMonth !== undefined && rawData.length > 1 && rawData[0].length === 0 && rawData[1].length === 0) {
                 labels.months = fMonth.map((item: number) => this.MONTHS[item - 1]);
             }
 
-            years.forEach((value, idx) => {
+            products.forEach((value, key) => {
                 const vols: number[] = [];
+                let sums = 0;
                 months.forEach((month) => {
-                    if (fMonth !== undefined && fMonth.indexOf(month) < 0 || rawData[idx].length === 0) {
+                    if (fMonth !== undefined && fMonth.indexOf(month) < 0) {
                         return;
                     }
-                    const fmt = `${value}-${month < 10 ? '0' : ''}${month}-01`;
-                    const vol =  rawData[idx].filter(item => item.producto === this.type && item.fecha === fmt)
-                                           .reduce((sum, item) => sum + item.volumen, 0);
+                    const fmt = `${lastYear}-${month < 10 ? '0' : ''}${month}-01`;
+                    const vol =  rawData.filter(item => item.producto === key && item.fecha === fmt)
+                                        .reduce((sum, item) => sum + item.volumen, 0);
                     vols.push(vol);
-
+                    sums += vol;
                 });
 
-                volumes.push(vols);
+                if (sums > 0) {
+                    volumes.push(vols);
+                }
             });
             this.setChartData(labels, volumes);
             this.loaded = true;
         },
         setChartData(labels: Labels, volumes: object[]) {
             this.chartData = {
-                colors: this.colors[this.type === "GS" ? this.type :
-                                    this.title.startsWith("GASOIL") ? "GL" : "GA"],
+                colors: this.colors[this.type],
                 labels: labels.months,
-                datasets: [{
-                    label: labels.years[0],
-                    data: volumes[0],
-                    lineTension: 0,
-                    fill: false
-                },
-                {
-                    label: labels.years[1],
-                    data: volumes[1],
-                    lineTension: 0,
-                    fill: false
-                }]
+                datasets: volumes.map((item, idx) => {
+                    return {
+                        label: labels.products[idx],
+                        data: item,
+                        lineTension: 0,
+                        fill: false
+                    };
+                })
             };
         }
     },
@@ -129,22 +124,19 @@ const PriceMonths = Vue.extend({
     }
 });
 
-const PriceImportMonths = Vue.extend({
-    extends: PriceMonths,
+const PriceImportGasMonths = Vue.extend({
+    extends: ProductPriceMonth,
     computed: {
         products() {
-            return this.$store.getters.getPriProducts;
+            return this.$store.getters["imports/getProducts"];
         },
         rawData() {
-            return [
-                this.$store.getters.getPriDataY1,
-                this.$store.getters.getPriDataY2
-            ];
+            return this.$store.getters["imports/getData"]("import/gas/by_price/" + this.year);
         }
     },
     methods: {
         requestData() {
-            this.$store.dispatch("fetchByPrice", this.year)
+            this.$store.dispatch("imports/fetchByName", "gas/by_price/" + this.year)
                         .then(this.updateChart)
                         .catch(this.onError);
         }
@@ -153,4 +145,4 @@ const PriceImportMonths = Vue.extend({
 
 
 
-export { PriceImportMonths };
+export { PriceImportGasMonths };

@@ -28,7 +28,6 @@ const StationMap = Vue.extend({
     template,
     data() {
         return {
-            loaded: false,
             chartData: {},
             features: [],
             title: "Departamento",

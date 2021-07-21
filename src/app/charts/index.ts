@@ -5,9 +5,9 @@ import * as ChartGeo from 'chartjs-chart-geo';
 
 import CategoryChart from './CategoryChart';
 import CategoryMonthsChart from './CategoryMonthsChart';
-import CategoryTimeChart from './CategoryTimeChart';
+import { CategoryTimeChart, CategoryBarTimeChart } from './CategoryTimeChart';
 import CategoryYearsChart from './CategoryYearsChart';
-import CompanyChart from './CompanyChart';
+import { CompanyChart, CompanyBarChart } from './CompanyChart';
 import ProductChart from './ProductChart';
 import PriceMonthsChart from './PriceMonthsChart';
 import CountryChart from './CountryChart';
@@ -60,6 +60,6 @@ export {
     ColorSchemes, TopoJSONType, ColorSchemesType, getTopoJSON, formatter,
     CategoryChart, CategoryMonthsChart, StationChart,
     CategoryTimeChart, CategoryYearsChart, CompanyChart, ProductChart,
-    GeoMapChart, PriceMonthsChart, CountryChart, CompanyShareChart, 
-    ClientMixChart, ProductsMixChart
+    GeoMapChart, PriceMonthsChart, CountryChart, CompanyShareChart,
+    ClientMixChart, ProductsMixChart, CompanyBarChart, CategoryBarTimeChart
 };

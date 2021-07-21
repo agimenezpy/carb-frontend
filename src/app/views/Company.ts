@@ -131,9 +131,6 @@ const CompanyImport = Vue.extend({
         }
     },
     methods: {
-        doFilter(filters: FilterObj, rawData: Record[]) {
-            return this.filterMonthData(filters, rawData);
-        },
         requestData() {
             this.$store.dispatch("imports/fetchByName", "by_company/" + this.year)
                        .then(this.updateChart)

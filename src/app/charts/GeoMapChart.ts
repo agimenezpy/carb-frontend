@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import { generateChart, mixins } from 'vue-chartjs';
+import { formatter } from './index';
+
 
 const GeoMapChart = Vue.extend({
     extends: generateChart("choropleth", "choropleth"),
@@ -13,9 +15,9 @@ const GeoMapChart = Vue.extend({
         aspect: Boolean
     },
     data() {
+        const items: number[] = [0, 0.25, 1];
         return {
             options: {
-                showOutline: false,
                 showGraticule: false,
                 legend: {
                   display: false,
@@ -25,9 +27,13 @@ const GeoMapChart = Vue.extend({
                 },
                 geo: {
                     colorScale: {
-                        display: true,
+                        interpolate: (typeof this.chartData.colors === "object") ?
+                            (v: number) => {
+                                return this.chartData.colors[items.indexOf(v)];
+                            } : 'Blues',
+                        display: this.chartData.datasets[0].data.length > 3,
                         position: 'top',
-                        quantize: 5,
+                        quantize: this.chartData.datasets[0].data.length < 4 ? this.chartData.datasets[0].data.length * 2 : 5,
                         legend: {
                             position: 'top-right',
                         }
@@ -38,11 +44,12 @@ const GeoMapChart = Vue.extend({
                         display: true,
                         labels: {
                             value: {
-                                font: {size: "9"},
+                                font: {size: this.chartData.fontSize || "9"},
                             }
                         },
                         align: (item: any) => {
-                            const codigo =  item.dataset.data[item.dataIndex].feature.properties.codigo;
+                            const prop = item.dataset.data[item.dataIndex].feature.properties;
+                            const codigo =  prop.codigo || prop.iso_a2;
                             if (codigo.match(/00/)) {
                                 return "top";
                             }
@@ -59,10 +66,17 @@ const GeoMapChart = Vue.extend({
                                 return "center";
                             }
                         },
-                        color: "#444444",
+                        color: this.chartData.color || "#444444",
                         textAlign: "center",
                         formatter: (item: any) => {
-                            return `${item.feature.properties.nombre}\n(${item.value})`;
+                            if (item.value > 0) {
+                                const label = item.feature.properties.nombre || item.feature.properties.admin;
+                                const value = formatter(item.value);
+                                return `${label}\n${value}`;
+                            }
+                            else {
+                                return "";
+                            }
                         }
                     },
                     colorschemes: {

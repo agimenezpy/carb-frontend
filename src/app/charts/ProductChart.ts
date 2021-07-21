@@ -30,23 +30,13 @@ const ProductChart = Vue.extend({
                                 if (label >= 1e3) return formatter(label / 1e3) + "K";
                             }
                         },
-                        gridLines: {
-                            display: true
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Litros"
-                        }
+                        gridLines: { display: true },
+                        scaleLabel: { display: false, labelString: "Litros" }
                     }],
                     xAxes: [{
-                        ticks: {
-                            display: true
-                        },
-                        gridLines: {
-                            display: false
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Productos"
-                        }
+                        ticks: { display: true },
+                        gridLines: { display: false },
+                        scaleLabel: { display: false, labelString: "Productos" }
                     }]
                 },
                 legend: {

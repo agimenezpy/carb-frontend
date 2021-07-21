@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import { Line, mixins } from 'vue-chartjs';
+import { formatter } from './index';
 
 const CategoryMonthsChart = Vue.extend({
     extends: Line,
@@ -23,34 +24,21 @@ const CategoryMonthsChart = Vue.extend({
                             display: false,
                             beginAtZero: true,
                             callback: (label: number) => {
-                                const fmt = Intl.NumberFormat().format;
-                                if (label < 1e3) return fmt(label);
-                                if (label >= 1e6) return fmt(label / 1e6) + "M";
-                                if (label >= 1e3) return fmt(label / 1e3) + "K";
+                                if (label < 1e3) return formatter(label);
+                                if (label >= 1e6) return formatter(label / 1e6) + "M";
+                                if (label >= 1e3) return formatter(label / 1e3) + "K";
                             }
                         },
-                        gridLines: {
-                            display: true
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Litros"
-                        }
+                        gridLines: { display: true },
+                        scaleLabel: { display: false, labelString: "Litros" }
                     }],
                     xAxes: [{
-                        ticks: {
-                            display: true
-                        },
-                        gridLines: {
-                            display: false
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Mes"
-                        }
+                        ticks: { display: true },
+                        gridLines: { display: false },
+                        scaleLabel: { display: false, labelString: "Mes" }
                     }]
                 },
-                legend: {
-                    display: true
-                },
+                legend: { display: true },
                 title: {
                     display: this.title !== undefined,
                     text: this.title
@@ -58,14 +46,14 @@ const CategoryMonthsChart = Vue.extend({
                 tooltips: {
                     callbacks: {
                         label: (item: any, data: any) => {
-                            const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
-                            return fmt(data.datasets[item.datasetIndex].data[item.index] / 1e6);
+                            const div = typeof this.chartData.div === "number" ? this.chartData.div : 1e6;
+                            return formatter(data.datasets[item.datasetIndex].data[item.index] / div);
                         }
                     }
                 },
                 plugins: {
                     datalabels: {
-                        display: false,
+                        display: this.chartData.showLabels || false,
                         labels: {
                             value: {
                                 font: {weight: 'bold'},
@@ -75,16 +63,11 @@ const CategoryMonthsChart = Vue.extend({
                             return item.datasetIndex === 0 ? 'end' : 'start';
                         },
                         formatter:  (label: number) => {
-                            const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 2}).format;
-                            return fmt(label / 1e6);
+                            const div = typeof this.chartData.div === "number" ? this.chartData.div : 1e6;
+                            return formatter(label / div);
                         }
                     },
-                    colorschemes: {
-                        scheme: this.chartData.colors,
-                        custom: (scheme: string[]) => {
-                            return this.chartData.colors.match("Blue") ? scheme : [scheme[1], scheme[0]];
-                        }
-                    }
+                    colorschemes: { scheme: this.chartData.colors }
                 },
                 maintainAspectRatio: false
             }
@@ -94,5 +77,6 @@ const CategoryMonthsChart = Vue.extend({
         this.renderChart(this.chartData, this.options);
     }
 });
+
 
 export default CategoryMonthsChart;

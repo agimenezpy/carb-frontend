@@ -53,7 +53,7 @@ const CategoryTime = Vue.extend({
                 rawData = this.rawData;
                 lastDate = rawData[rawData.length - 1].fecha;
             }
-            
+
             const lastYear = parseInt(lastDate.split("-")[0], 10);
             const lastMonth = parseInt(lastDate.split("-")[1], 10);
 

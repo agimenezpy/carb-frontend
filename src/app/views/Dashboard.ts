@@ -7,7 +7,7 @@ import { CategoryImportMonths } from './CategoryMonths';
 import { PriceImportMonths } from './PriceMonths';
 import CategoryYears from './CategoryYears';
 import {FilterMonth, FilterCompany, FilterYear } from '../filters/';
-import Country from './Country';
+import { CountryImport } from './Country';
 import Loader from './Loader';
 
 
@@ -45,8 +45,8 @@ const template = `
             <PriceImportMonths header="Precio $title (dolares/litro)" type="N91" xclass="column-10" :styles="{height: '240px'}" />
         </div>
         <div class="column-20 leader-1">
-            <Country header="Importación por Origen $title" type="GL" xclass="column-10" :styles="{height: '240px'}"/>
-            <Country header="Importación por Origen $title" type="GA" xclass="column-10" :styles="{height: '240px'}"/>
+            <CountryImport header="Importación por Origen $title" type="GL" xclass="column-10" :styles="{height: '240px'}"/>
+            <CountryImport header="Importación por Origen $title" type="GA" xclass="column-10" :styles="{height: '240px'}"/>
         </div>
     </div>
 </div>`;
@@ -56,7 +56,7 @@ const Dashboard = Vue.extend({
     components: {
         ProductImport, CategoryImport, CompanyImport,
         CategoryImportTime, CategoryImportMonths, CategoryYears, PriceImportMonths,
-        FilterMonth, FilterCompany, FilterYear, Country, Loader
+        FilterMonth, FilterCompany, FilterYear, CountryImport, Loader
     },
     template,
     data() {

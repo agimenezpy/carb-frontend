@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Loader from './Loader';
-import { CategoryMonthsChart  } from '../charts';
+import { CategoryMonthsChart, ColorSchemes } from '../charts';
 import { FilterUtil, FilterObj, Record, WatchMonth, CardUtil } from './mixins';
 
 const template = `<div :class="[xclass]">
@@ -31,9 +31,15 @@ const CategoryMonths = Vue.extend({
     mixins: [FilterUtil, WatchMonth, CardUtil],
     template,
     data() {
+        const schemes = ColorSchemes.getColorSchemes();
         return {
             title: "",
-            chartData: {}
+            chartData: {},
+            colors: {
+                "GS": [schemes.office.Blue6[0], schemes.office.Orange6[0]],
+                "GL": [schemes.office.Blue6[0], schemes.office.Blue6[1]],
+                "GA": [schemes.office.Orange6[1], schemes.office.Orange6[0]]
+            }
         };
     },
     props: {
@@ -90,7 +96,9 @@ const CategoryMonths = Vue.extend({
         setChartData(title: string, labels: Labels, volumes: object[]) {
             this.title = title;
             this.chartData = {
-                colors: title.startsWith("GASOIL") ? 'office.Blue6' : 'office.Orange6',
+                colors: this.colors[this.type],
+                div: this.type === "GS" ? 1 : false,
+                showLabels: this.type === "GS",
                 labels: labels.months,
                 datasets: [{
                     label: labels.years[0],
@@ -196,4 +204,30 @@ const CategorySalesMMonths = Vue.extend({
     }
 });
 
-export { CategoryImportMonths, CategorySalesMonths, CategorySalesMMonths };
+
+const CategoryImportGasMonths = Vue.extend({
+    extends: CategoryMonths,
+    computed: {
+        categories() {
+            return this.$store.getters["imports/getCategories"];
+        },
+        rawData() {
+            return [
+                this.$store.getters["imports/getData"](`import/gas/by_month/${this.year - 1}`),
+                this.$store.getters["imports/getData"](`import/gas/by_month/${this.year}`)
+            ];
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("imports/fetchByName", `gas/by_month/${this.year}`).then(() => {
+                this.$store.dispatch("imports/fetchByName", `gas/by_month/${this.year - 1}`)
+                            .then(this.updateChart)
+                            .catch(this.onError);
+            }).catch(this.onError);
+        }
+    }
+});
+
+export { CategoryImportMonths, CategorySalesMonths, CategorySalesMMonths,
+         CategoryImportGasMonths };

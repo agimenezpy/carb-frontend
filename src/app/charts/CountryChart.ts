@@ -33,7 +33,7 @@ const CountryChart = Vue.extend({
                         }
                     }
                 },
-                rotation: 1 * 0.2 * Math.PI,
+                rotation: this.chartData.rotate || 1 * 0.2 * Math.PI,
                 plugins: {
                     datalabels: {
                         formatter: (value: any, context: any) => {
@@ -43,9 +43,13 @@ const CountryChart = Vue.extend({
                             const label = context.chart.data.labels[context.dataIndex];
                             return `${label}\n${percentage}%`;
                         },
-                        color: "#444444",
+                        color: this.chartData.color || "#444444",
                         anchor: "end",
+                        clamp: true,
                         align(item: any) {
+                            if (item.chart.data.labels.length < 4) {
+                                return "start" ;
+                            }
                             const codigo =  item.chart.data.labels[item.dataIndex];
                             if (codigo === "OTROS") {
                                 return "bottom";

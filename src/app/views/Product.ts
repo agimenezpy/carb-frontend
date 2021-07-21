@@ -24,7 +24,7 @@ const Product = Vue.extend({
     components: {
         ProductChart, Loader
     },
-    mixins: [FilterUtil, WatchMonth, WatchComp, WatchDepto, CardUtil],
+    mixins: [FilterUtil, CardUtil],
     template,
     data() {
         return {
@@ -44,14 +44,10 @@ const Product = Vue.extend({
         updateChart(filters: FilterObj = {}) {
             this.loaded = false;
             const products: Map<string, string> = this.products;
-            let rawData: Record[] = [];
+            let rawData: Record[] = this.rawData;
 
             const labels: string[] = [];
             const volumes: number[] = [];
-
-            if (this.rawData.length > 0) {
-                rawData = this.rawData;
-            }
 
             if (!this.isEmpty(filters) && rawData.length > 0) {
                 rawData = this.doFilter(filters, rawData);
@@ -166,7 +162,7 @@ const ProductSales = Vue.extend({
 
 const ProductSalesMix = Vue.extend({
     extends: Product,
-    mixins: [WatchMonth, WatchComp, WatchDepto],
+    mixins: [WatchMonth, WatchComp],
     data() {
         return {
             div: 1e6,
@@ -175,7 +171,7 @@ const ProductSalesMix = Vue.extend({
     },
     methods: {
         doFilter(filters: FilterObj, rawData: Record[]) {
-            return this.filterData(filters, rawData);
+            return this.filterDualData(filters, rawData);
         },
         requestData() {
             this.$store.dispatch("sales/fetchByName", "salesm/by_product/" + this.year)

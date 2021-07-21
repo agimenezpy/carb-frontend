@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import Dashboard from '../views/Dashboard';
 import Salesboard from '../views/Salesboard';
 import Plantsboard from '../views/Plantsboard';
+import Gasboard from '../views/Gasboard';
 
 
 // Views
@@ -34,6 +35,16 @@ export default new Router({
             path: '/mix',
             name: 'Sales Plants',
             component: Plantsboard
+        },
+        {
+            path: '/gasboard',
+            name: 'Import Gas',
+            component: Gasboard
+        },
+        {
+            path: '/salesgas',
+            name: 'Sales Gas',
+            component: Gasboard
         }
     ]
 });

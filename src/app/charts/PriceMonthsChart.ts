@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import { Line, mixins } from 'vue-chartjs';
 
+const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 4}).format;
+
 const PriceMonthsChart = Vue.extend({
     extends: Line,
     mixins: [ mixins.reactiveProp ],
@@ -23,42 +25,24 @@ const PriceMonthsChart = Vue.extend({
                             display: true,
                             beginAtZero: true,
                             callback: (label: number) => {
-                                const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 4}).format;
                                 return fmt(label);
                             }
                         },
-                        gridLines: {
-                            display: true
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Dolares"
-                        }
+                        gridLines: { display: true },
+                        scaleLabel: { display: false, labelString: "Dolares" }
                     }],
                     xAxes: [{
-                        ticks: {
-                            display: true
-                        },
-                        gridLines: {
-                            display: false
-                        },
-                        scaleLabel: {
-                            display: false, labelString: "Mes"
-                        }
+                        ticks: { display: true },
+                        gridLines: { display: false },
+                        scaleLabel: { display: false, labelString: "Mes" }
                     }]
                 },
-                legend: {
-                    display: true
-                },
-                title: {
-                    display: this.title !== undefined,
-                    text: this.title
-                },
+                legend: { display: true },
+                title: { display: this.title !== undefined, text: this.title  },
                 tooltips: {
                     callbacks: {
                         label: (item: any, data: any) => (
-                            Intl.NumberFormat('es-PY', {maximumFractionDigits: 4}).format(
-                                data.datasets[item.datasetIndex].data[item.index]
-                            )
+                            fmt(data.datasets[item.datasetIndex].data[item.index])
                         )
                     }
                 },
@@ -74,15 +58,11 @@ const PriceMonthsChart = Vue.extend({
                             return item.datasetIndex === 0 ? 'end' : 'start';
                         },
                         formatter:  (label: number) => {
-                            const fmt = Intl.NumberFormat('es-PY', {maximumFractionDigits: 4}).format;
                             return fmt(label);
                         }
                     },
                     colorschemes: {
                         scheme: this.chartData.colors,
-                        custom: (scheme: string[]) => {
-                            return this.chartData.colors.match("Blue") ? scheme : [scheme[1], scheme[0]];
-                        }
                     }
                 },
                 maintainAspectRatio: false

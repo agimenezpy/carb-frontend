@@ -34,7 +34,8 @@ const FilterCompany = Vue.extend({
     watch: {
         companies(companies: Map<number, string>) {
             if (companies.size > 0) {
-                const rawData = this.$store.getters["imports/getData"]("import/by_company/" + this.year);
+                const subpage = (this.page === "import") ? "by_company" : "by_category";
+                const rawData = this.$store.getters["imports/getData"](`${this.page}/${subpage}/${this.year}`);
                 this.setCompanies(companies, rawData);
             }
         },
