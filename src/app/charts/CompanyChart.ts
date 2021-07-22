@@ -21,7 +21,7 @@ const CompanyChart = Vue.extend({
                 scales: {
                     xAxes: [{
                         ticks: {
-                            display: this.chartData.showTicks || true,
+                            display: (this.chartData.showTicks !== undefined) ? this.chartData.showTicks : true,
                             beginAtZero: true,
                             callback: (label: number) => {
                                 if (label < 1e3) return formatter(label);
@@ -29,7 +29,7 @@ const CompanyChart = Vue.extend({
                                 if (label >= 1e3) return formatter(label / 1e3) + "K";
                             }
                         },
-                        gridLines: { display: true },
+                        gridLines: { display: (this.chartData.showTicks !== undefined) ? this.chartData.showTicks : true },
                         scaleLabel: { display: false, labelString: "Litros" }
                     }],
                     yAxes: [{
@@ -38,7 +38,7 @@ const CompanyChart = Vue.extend({
                         scaleLabel: { display: false, labelString: "Empresas" }
                     }]
                 },
-                legend: { display: true },
+                legend: { display: (this.chartData.showLegend !== undefined) ? this.chartData.showLegend : true },
                 title: { display: this.title !== undefined, text: this.title },
                 tooltips: {
                     callbacks: {

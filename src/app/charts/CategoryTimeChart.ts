@@ -96,7 +96,7 @@ const CategoryBarTimeChart = Vue.extend({
                             display: this.chartData.showTicks || false,
                             beginAtZero: true,
                             callback: (label: number) => {
-                                if (label < 1e3) return formatter(label);
+                                if (label < 1e3 || this.chartData.largeTicks) return formatter(label);
                                 if (label >= 1e6) return formatter(label / 1e6) + "M";
                                 if (label >= 1e3) return formatter(label / 1e3) + "K";
                             }

@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { CompanyBarChart } from '../charts';
+import { CompanyBarChart, CompanyChart } from '../charts';
 import Loader from './Loader';
 import { FilterUtil, FilterObj, Record, WatchComp, WatchMonth, CardUtil, WatchCntry } from './mixins';
 
@@ -14,7 +14,8 @@ const template = `<div :class="[xclass]">
             <div class="alert alert-yellow modifier-class is-active" v-if="empty">
                 Sin datos
             </div>
-            <company-bar-chart v-if="loaded" :chart-data="chartData" :styles="styles"></company-bar-chart>
+            <company-bar-chart v-if="loaded && !horizontal" :chart-data="chartData" :styles="styles"></company-bar-chart>
+            <company-chart v-if="loaded && horizontal" :chart-data="chartData" :styles="styles"></company-chart>
         </div>
     </div>
 </div>`;
@@ -22,7 +23,7 @@ const template = `<div :class="[xclass]">
 const CompanyBar = Vue.extend({
     name: "CompanyBar",
     components: {
-        CompanyBarChart, Loader
+        CompanyBarChart, CompanyChart, Loader
     },
     mixins: [FilterUtil, CardUtil],
     template,
@@ -77,6 +78,8 @@ const CompanyBar = Vue.extend({
             this.chartData = {
                 labels,
                 showLabels: true,
+                showTicks: false,
+                showLegend: false,
                 datasets: [{
                     label: this.type,
                     data: volumes
@@ -104,6 +107,11 @@ const CompanyBar = Vue.extend({
 const CompanyImportGas = Vue.extend({
     extends: CompanyBar,
     mixins: [WatchComp, WatchMonth, WatchCntry],
+    data() {
+        return {
+            horizontal: false
+        };
+    },
     computed: {
         companies() {
             return this.$store.getters["imports/getCompanies"];
@@ -124,4 +132,32 @@ const CompanyImportGas = Vue.extend({
     }
 });
 
-export { CompanyImportGas };
+const CompanySalesGas = Vue.extend({
+    extends: CompanyBar,
+    mixins: [WatchComp, WatchMonth, WatchCntry],
+    data() {
+        return {
+            horizontal: true
+        };
+    },
+    computed: {
+        companies() {
+            return this.$store.getters["sales/getCompanies"];
+        },
+        categories() {
+            return this.$store.getters["sales/getCategories"];
+        },
+        rawData() {
+            return this.$store.getters["sales/getData"]("sales/gas/by_category/" + this.year);
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "gas/by_category/" + this.year)
+                       .then(this.updateChart)
+                       .catch(this.onError);
+        }
+    }
+});
+
+export { CompanyImportGas, CompanySalesGas };

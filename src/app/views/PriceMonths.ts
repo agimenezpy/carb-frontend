@@ -82,7 +82,7 @@ const PriceMonths = Vue.extend({
                     }
                     const fmt = `${value}-${month < 10 ? '0' : ''}${month}-01`;
                     const vol =  rawData[idx].filter(item => item.producto === this.type && item.fecha === fmt)
-                                           .reduce((sum, item) => sum + item.volumen, 0);
+                                             .reduce((sum, item) => sum + Number(item.volumen), 0.0);
                     vols.push(vol);
 
                 });

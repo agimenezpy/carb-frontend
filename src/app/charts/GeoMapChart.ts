@@ -15,7 +15,7 @@ const GeoMapChart = Vue.extend({
         aspect: Boolean
     },
     data() {
-        const items: number[] = [0, 0.25, 1];
+        let items = 0;
         return {
             options: {
                 showGraticule: false,
@@ -29,11 +29,12 @@ const GeoMapChart = Vue.extend({
                     colorScale: {
                         interpolate: (typeof this.chartData.colors === "object") ?
                             (v: number) => {
-                                return this.chartData.colors[items.indexOf(v)];
+                                const len = this.chartData.colors.length;
+                                return (this.chartData.datasets[0].data[len - 1].value > 0) ? this.chartData.colors[(items++) % len] : '#FFFFFF';
                             } : 'Blues',
                         display: this.chartData.datasets[0].data.length > 3,
                         position: 'top',
-                        quantize: this.chartData.datasets[0].data.length < 4 ? this.chartData.datasets[0].data.length * 2 : 5,
+                        quantize: 5,
                         legend: {
                             position: 'top-right',
                         }

@@ -5,7 +5,6 @@ import { CompanyImportGas } from './CompanyBar';
 import { CategoryImportGasTime } from './CategoryBarTime';
 import { CategoryImportGasMonths } from './CategoryMonths';
 import { PriceImportGasMonths } from './ProductPriceMonth';
-import CategoryYears from './CategoryYears';
 import {FilterMonth, FilterCompany, FilterYear, FilterCountry } from '../filters/';
 import {CountryImportGas} from './Country';
 import Loader from './Loader';
@@ -44,7 +43,7 @@ const Gasboard = Vue.extend({
     name: "Gasboard",
     components: {
         ProductImportGas, CountryMap, CompanyImportGas,
-        CategoryImportGasTime, CategoryImportGasMonths, CategoryYears, PriceImportGasMonths,
+        CategoryImportGasTime, CategoryImportGasMonths, PriceImportGasMonths,
         FilterMonth, FilterCompany, FilterCountry, FilterYear, CountryImportGas, Loader
     },
     template,

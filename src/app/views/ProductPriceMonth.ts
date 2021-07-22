@@ -67,7 +67,7 @@ const ProductPriceMonth = Vue.extend({
                 "products": Array.from(this.products.values())
             };
             const fMonth = filters.fMonth;
-            if (fMonth !== undefined && rawData.length > 1 && rawData[0].length === 0 && rawData[1].length === 0) {
+            if (fMonth !== undefined && rawData.length > 1) {
                 labels.months = fMonth.map((item: number) => this.MONTHS[item - 1]);
             }
 
@@ -80,7 +80,7 @@ const ProductPriceMonth = Vue.extend({
                     }
                     const fmt = `${lastYear}-${month < 10 ? '0' : ''}${month}-01`;
                     const vol =  rawData.filter(item => item.producto === key && item.fecha === fmt)
-                                        .reduce((sum, item) => sum + item.volumen, 0);
+                                        .reduce((sum, item) => sum + Number(item.volumen), 0.0);
                     vols.push(vol);
                     sums += vol;
                 });

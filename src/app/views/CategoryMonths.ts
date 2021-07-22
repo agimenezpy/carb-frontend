@@ -229,5 +229,29 @@ const CategoryImportGasMonths = Vue.extend({
     }
 });
 
+const CategorySalesGasMonths = Vue.extend({
+    extends: CategoryMonths,
+    computed: {
+        categories() {
+            return this.$store.getters["sales/getCategories"];
+        },
+        rawData() {
+            return [
+                this.$store.getters["sales/getData"](`sales/gas/by_month/${this.year - 1}`),
+                this.$store.getters["sales/getData"](`sales/gas/by_month/${this.year}`)
+            ];
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", `gas/by_month/${this.year}`).then(() => {
+                this.$store.dispatch("sales/fetchByName", `gas/by_month/${this.year - 1}`)
+                            .then(this.updateChart)
+                            .catch(this.onError);
+            }).catch(this.onError);
+        }
+    }
+});
+
 export { CategoryImportMonths, CategorySalesMonths, CategorySalesMMonths,
-         CategoryImportGasMonths };
+         CategoryImportGasMonths, CategorySalesGasMonths };

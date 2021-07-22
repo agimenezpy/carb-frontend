@@ -91,7 +91,7 @@ const SalesStore = {
     },
     actions: {
         fetchByName(context: any, uri: string): any {
-            const api = (uri.startsWith("by_")) ? `sales/${uri}` : uri;
+            const api = (uri.startsWith("salesm")) ? uri : `sales/${uri}`;
             const requests = context.state.requests;
             if (requests.has(api)) {
                 return requests.get(api);

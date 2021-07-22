@@ -4,6 +4,7 @@ import Dashboard from '../views/Dashboard';
 import Salesboard from '../views/Salesboard';
 import Plantsboard from '../views/Plantsboard';
 import Gasboard from '../views/Gasboard';
+import SalesGasboard from '../views/SalesGasboard';
 
 
 // Views
@@ -44,7 +45,7 @@ export default new Router({
         {
             path: '/salesgas',
             name: 'Sales Gas',
-            component: Gasboard
+            component: SalesGasboard
         }
     ]
 });

@@ -96,6 +96,8 @@ const CategoryBarTime = Vue.extend({
             this.chartData = {
                 labels: labels.months,
                 showLabels: true,
+                showTicks: this.showTicks || false,
+                largeTicks: true,
                 labelRotation: 0,
                 xLabelRotation: 0,
                 datasets: [{
@@ -142,6 +144,31 @@ const CategoryImportGasTime = Vue.extend({
     }
 });
 
+const CategorySalesGasTime = Vue.extend({
+    extends: CategoryBarTime,
+    mixins: [WatchMonth, WatchComp],
+    data() {
+        return {
+            showTicks: true
+        };
+    },
+    computed: {
+        categories() {
+            return this.$store.getters["sales/getCategories"];
+        },
+        rawData() {
+            return this.$store.getters["sales/getData"]("sales/gas/by_category/" + this.year);
+        }
+    },
+    methods: {
+        requestData() {
+            this.$store.dispatch("sales/fetchByName", "gas/by_category/" + this.year)
+                       .then(this.updateChart)
+                       .catch(this.onError);
+        }
+    }
+});
+
 export {
-    CategoryImportGasTime
+    CategoryImportGasTime, CategorySalesGasTime
 };
