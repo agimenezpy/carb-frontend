@@ -134,7 +134,14 @@ const CategoryBarTimeChart = Vue.extend({
                         rotation: (this.chartData.labelRotation) !== undefined ? this.chartData.labelRotation : -90,
                         anchor: 'end',
                         align: 'end',
-                        formatter: (value: any, context: any) => formatter(value)
+                        formatter: (value: any, context: any) =>  {
+                            if ((this.chartData.hideLabelZero || false) && value < 1) {
+                                return "";
+                            }
+                            else {
+                                return formatter(value);
+                            }
+                        }
                     },
                     colorschemes: {
                         scheme: typeof this.chartData.colors !== 'undefined' ? this.chartData.colors : 'office.Office6'

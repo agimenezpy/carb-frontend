@@ -38,8 +38,8 @@ const SalesBase = Vue.extend({
     },
     data() {
         return {
-            showLogo: true,
             loaded: false,
+            type: "GLA",
             company: [],
             product: [],
             logos: [],
@@ -52,7 +52,7 @@ const SalesBase = Vue.extend({
             return `http://gis.mic.gov.py/static/img/emb/${value}_64.png`;
         },
         noLogo(obj: any) {
-            obj.target.src = "";
+            obj.target.src = (this.type === "GS") ? "http://gis.mic.gov.py/static/img/emb/NNGS_64.png" : "";
         },
         fmt(value: number) {
             return (value > 0) ?  Intl.NumberFormat("es-PY").format(value * 1000).replace(".000", "") : 'N/A';
@@ -66,7 +66,11 @@ const SalesBase = Vue.extend({
             const rows: string[] = this.rawData.rows;
             const columns: string[] = this.rawData.columns;
             this.company = columns.map((item: string) => emblems.get(item));
-            this.logos = columns.map((item: string) => item === "TMG" ? "3MG" : item);
+            this.logos = columns.map((item: string) => {
+                let icon = (item === "TMG") ? "3MG" : item;
+                icon = (icon.match(/CPT|PTP|PUM|PTBR|COPEG/) && this.type === "GS") ? icon + "GS" : icon;
+                return icon;
+            });
             this.product = rows.map((item: string) => products.get(item));
             this.values = rawData.data;
             this.loaded = true;
@@ -104,7 +108,7 @@ const SalesGasPrice = Vue.extend({
     extends: SalesBase,
     data() {
         return {
-            showLogo: true
+            type: "GS"
         };
     },
     watch: {
@@ -114,7 +118,7 @@ const SalesGasPrice = Vue.extend({
     },
     computed: {
         products() {
-            return this.$store.getters["sales/getCategories"];
+            return this.$store.getters["sales/getProducts"];
         },
         emblems() {
             return this.$store.getters["sales/getEmblems"];

@@ -22,7 +22,7 @@ const template = `
     </div>
     <Loader v-if="!loaded && !error"/>
     <div class="column-20 " v-if="loaded">
-        <h2 class="text-rule">Mezcladoras - Ventas de combustibles</h2>
+        <h2 class="text-rule">Plantas de almacenaje - Ventas de combustibles</h2>
         <div class="column-20 leader-1">
             <CompanyShare header="Participación en venta $title de combustibles (%)" type="TOTAL" xclass="column-6" :styles="{height: '300px'}"/>
             <CompanyShare header="Participación en venta de $title (%)" type="GL" xclass="column-7" :styles="{height: '300px'}"/>

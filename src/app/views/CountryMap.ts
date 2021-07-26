@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import { GeoMapChart, getTopoJSON, TopoJSONType, ColorSchemes} from '../charts';
 import Loader from './Loader';
-import { FilterUtil, FilterObj, Record, CardUtil} from './mixins';
+import { FilterUtil, FilterObj, Record, CardUtil, WatchComp, WatchMonth} from './mixins';
 
 const template = `<div :class="[xclass]">
     <div class="card">
@@ -24,7 +24,7 @@ const CountryMap = Vue.extend({
     components: {
         GeoMapChart, Loader
     },
-    mixins: [CardUtil, FilterUtil],
+    mixins: [CardUtil, FilterUtil, WatchComp, WatchMonth],
     template,
     data() {
         const schemes = ColorSchemes.getColorSchemes();
@@ -52,7 +52,7 @@ const CountryMap = Vue.extend({
             const volumes: number[] = [];
 
             if (!this.isEmpty(filters) && rawData.length > 0) {
-                rawData = this.filterCompData(filters, rawData);
+                rawData = this.filterDualData(filters, rawData);
             }
 
             let suma = 0;
@@ -69,10 +69,7 @@ const CountryMap = Vue.extend({
         setChartData(labels: string[], qty: number[], sum: number) {
             //[schemes.brewer.BuGn3[1], schemes.brewer.BuGn3[2], schemes.brewer.BuGn3[0]]
             const colors = [...this.colors];
-            if (colors[1] > colors[2]) {
-                colors[1] = this.colors[2];
-                colors[2] = this.colors[1];
-            }
+            
             let data = [];
             if (sum >= 0) {
                 data = this.features.map((feature: any, idx: number) => ({

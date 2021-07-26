@@ -30,8 +30,8 @@ const template = `
             <ProductImportGas type="GS" header="Importación por tipo" xclass="column-6" :styles="{height: '240px'}"/>
         </div>
         <div class="column-20 leader-1">
-            <CategoryImportGasTime header="Importación por Empresa (kg)" type="GS" xclass="column-10" :styles="{height: '240px'}"/>
-            <CompanyImportGas header="Importación por Empresa (kg)" type="GS" xclass="column-10" :styles="{height: '240px'}"/>
+            <CategoryImportGasTime header="Importación por mes (kg)" type="GS" xclass="column-10" :styles="{height: '240px'}"/>
+            <CompanyImportGas header="Importación por empresa (kg)" type="GS" xclass="column-10" :styles="{height: '240px'}"/>
         </div>
         <div class="column-20 leader-1">
             <CountryImportGasMonth header="Comparativo de importaciones $year por país por mes (kg)" xclass="column-10" :styles="{height: '240px'}"/>

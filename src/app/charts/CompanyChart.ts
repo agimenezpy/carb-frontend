@@ -58,9 +58,18 @@ const CompanyChart = Vue.extend({
                         rotation: 0,
                         anchor: 'end',
                         align: 'end',
-                        formatter: (value: any, context: any) => formatter(value)
+                        formatter: (value: any, context: any) => {
+                            if ((this.chartData.hideLabelZero || false) && value < 1) {
+                                return "";
+                            }
+                            else {
+                                return formatter(value);
+                            }
+                        }
                     },
-                    colorschemes: {  scheme: 'office.Office6' }
+                    colorschemes: {
+                        scheme: typeof this.chartData.colors !== "undefined" ? this.chartData.colors : 'office.Office6'
+                    }
                 },
                 maintainAspectRatio: false
             }
@@ -110,7 +119,10 @@ const CompanyBarChart = Vue.extend({
                         scaleLabel: { display: false, labelString: "Empresas" }
                     }]
                 },
-                legend: { display: false },
+                legend: { 
+                    display: this.chartData.showLegend || false,
+                    position: this.chartData.legendPosition || "top"
+                },
                 title: { display: this.title !== undefined, text: this.title },
                 tooltips: {
                     callbacks: {
@@ -130,9 +142,18 @@ const CompanyBarChart = Vue.extend({
                         rotation: this.chartData.labelRotation || -90,
                         anchor: 'end',
                         align: 'end',
-                        formatter: (value: any, context: any) => formatter(value)
+                        formatter: (value: any, context: any) => {
+                            if ((this.chartData.hideLabelZero || false) && value < 1) {
+                                return "";
+                            }
+                            else {
+                                return formatter(value);
+                            }
+                        }
                     },
-                    colorschemes: {  scheme: 'office.Office6' }
+                    colorschemes: {
+                        scheme: typeof this.chartData.colors !== "undefined" ? this.chartData.colors : 'office.Office6'
+                    }
                 },
                 maintainAspectRatio: false
             }

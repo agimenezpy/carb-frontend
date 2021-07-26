@@ -13,6 +13,7 @@ interface State {
     departamento: Map<string, string>;
     distribuidor: Map<number, string>;
     emblema: Map<string, string>;
+    destination: Map<string, string>;
     requests: Map<string, object>;
 }
 
@@ -26,6 +27,7 @@ const SalesStore = {
         categoria: new Map(),
         emblema: new Map(),
         producto: new Map(),
+        destination: new Map(),
         requests: new Map()
     },
     mutations: {
@@ -67,6 +69,12 @@ const SalesStore = {
             Object.keys(emblem).forEach(key => (
                 state.emblema.set(key, emblem[key])
             ));
+        },
+        setDestinations(state: State, destination: object) {
+            state.destination = new Map();
+            Object.keys(destination).forEach(key => (
+                state.destination.set(key, destination[key])
+            ));
         }
     },
     getters: {
@@ -84,6 +92,9 @@ const SalesStore = {
         },
         getEmblems(state: State): Map<string, string>{
             return state.emblema;
+        },
+        getDestinations(state: State): Map<string, string>{
+            return state.destination;
         },
         getData(state: State): any {
             return (api: string) => state.data.get(api);
@@ -126,6 +137,9 @@ const SalesStore = {
                     }
                     if (response.data.emblema !== undefined) {
                         context.commit("setEmblem", response.data.emblema);
+                    }
+                    if (response.data.destino !== undefined) {
+                        context.commit("setDestinations", response.data.destino);
                     }
                     resolve({});
                     context.state.requests.delete(api);

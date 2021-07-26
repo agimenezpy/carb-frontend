@@ -126,7 +126,7 @@ const CountryBarTime = Vue.extend({
                 countries.forEach((value, key) => {
                     const vols: number[] = [];
                     months.forEach((month) => {
-                        if (fMonth !== undefined && fMonth.indexOf(month) < 0 || rawData.length === 0) {
+                        if (fMonth !== undefined && fMonth.indexOf(month) < 0 || rawData[idx].length === 0) {
                             return;
                         }
                         const fmt = `${year}-${month < 10 ? '0' : ''}${month}-01`;
@@ -153,14 +153,13 @@ const CountryBarTime = Vue.extend({
                 showLabels: true, showTicks: this.showTicks || false,
                 showLegend: true, largeTicks: true,
                 colors: this.colors,
+                hideLabelZero: true,
                 labelRotation: -90,
                 xLabelRotation: 0,
-                datasets:  volumes.map((item, idx) => {
-                    return {
+                datasets:  volumes.map((item, idx) => ({
                         label: labels.countries[idx],
                         data: item
-                    };
-                })
+                    }))
             };
         }
     },
