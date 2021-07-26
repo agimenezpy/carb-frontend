@@ -4,6 +4,7 @@ import { CountryMap } from './CountryMap';
 import { CompanyImportGas } from './CompanyBar';
 import { CategoryImportGasTime } from './CategoryBarTime';
 import { CategoryImportGasMonths } from './CategoryMonths';
+import { CountryImportGasTime, CountryImportGasMonth } from './CountryBarTime';
 import { PriceImportGasMonths } from './ProductPriceMonth';
 import {FilterMonth, FilterCompany, FilterYear, FilterCountry } from '../filters/';
 import {CountryImportGas} from './Country';
@@ -33,6 +34,10 @@ const template = `
             <CompanyImportGas header="Importación por Empresa (kg)" type="GS" xclass="column-10" :styles="{height: '240px'}"/>
         </div>
         <div class="column-20 leader-1">
+            <CountryImportGasMonth header="Comparativo de importaciones $year por país por mes (kg)" xclass="column-10" :styles="{height: '240px'}"/>
+            <CountryImportGasTime header="Importación por país por mes (kg)" xclass="column-10" :styles="{height: '240px'}"/>
+        </div>
+        <div class="column-20 leader-1">
             <CategoryImportGasMonths header="Importación por mes $title (kg)" type="GS" xclass="column-10" :styles="{height: '240px'}"/>
             <PriceImportGasMonths header="Costos de importación por tipo de producto (U$S/kg)" type="GS" xclass="column-10" :styles="{height: '240px'}"/>
         </div>
@@ -42,9 +47,10 @@ const template = `
 const Gasboard = Vue.extend({
     name: "Gasboard",
     components: {
-        ProductImportGas, CountryMap, CompanyImportGas,
-        CategoryImportGasTime, CategoryImportGasMonths, PriceImportGasMonths,
-        FilterMonth, FilterCompany, FilterCountry, FilterYear, CountryImportGas, Loader
+        ProductImportGas, CountryMap, CompanyImportGas, CategoryImportGasTime,
+        CategoryImportGasMonths, PriceImportGasMonths, CountryImportGas,
+        CountryImportGasTime, CountryImportGasMonth,
+        FilterMonth, FilterCompany, FilterCountry, FilterYear, Loader
     },
     template,
     data() {

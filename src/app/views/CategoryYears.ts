@@ -73,8 +73,8 @@ const CategoryYears = Vue.extend({
             };
 
             if (!this.isEmpty(filters) && rawData[0].length > 0 && rawData[1].length > 0) {
-                rawData[0] = this.filterMonthData(filters, rawData[0]);
-                rawData[1] = this.filterMonthData(filters, rawData[1]);
+                rawData = [this.filterMonthData(filters, rawData[0]),
+                           this.filterMonthData(filters, rawData[1])];
             }
 
             years.forEach((value, idx) => {

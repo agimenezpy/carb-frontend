@@ -32,7 +32,7 @@ const CountryMap = Vue.extend({
             chartData: {},
             features: [],
             title: "Pais",
-            colors: [schemes.brewer.BuGn3[0], schemes.brewer.BuGn3[2], schemes.brewer.BuGn3[1]]
+            colors: [schemes.brewer.BuGn3[0], schemes.brewer.BuGn3[2], schemes.brewer.BuGn3[1]],
         };
     },
     props: {
@@ -117,11 +117,11 @@ const CountryMap = Vue.extend({
             return this.$store.getters["sales/getData"]("assets/south.json");
         }
     },
-    mounted() {
-        this.$store.dispatch("sales/fetchGeoData", "assets/south.json").then(() => {
-            const geodeps = this.geojson;
-            this.features = getTopoJSON().feature(geodeps, geodeps.objects.sa).features;
-        });
+    async mounted() {
+        await this.$store.dispatch("sales/fetchGeoData", "assets/south.json");
+        const geodeps = this.geojson;
+        this.features = getTopoJSON().feature(geodeps, geodeps.objects.sa).features;
+
         if (this.year > 0) {
             this.requestData();
         }

@@ -12,7 +12,8 @@ const template = `<div :class="[xclass]">
                     <th>Producto</th>
                     <th v-for="(comp, idx) in company">
                         <a class="tooltip modifier-class" :aria-label="comp">
-                            <img :src="'http://gis.mic.gov.py/static/img/emb/' + logos[idx] + '_64.png'">
+                            <img v-if="logos[idx] !== 'NIN'" :src="getLogo(logos[idx])" @error="noLogo">
+                            <span v-if="logos[idx] === 'NIN'" class="font-size--3">{{ comp }}</span>
                         </a>
                     </th>
                 </tr>
@@ -29,8 +30,7 @@ const template = `<div :class="[xclass]">
     </div>
 </div>`;
 
-const SalesPrice = Vue.extend({
-    name: "SalesPrice",
+const SalesBase = Vue.extend({
     template,
     props: {
         header: String,
@@ -38,6 +38,7 @@ const SalesPrice = Vue.extend({
     },
     data() {
         return {
+            showLogo: true,
             loaded: false,
             company: [],
             product: [],
@@ -46,23 +47,13 @@ const SalesPrice = Vue.extend({
             promise: {}
         };
     },
-    watch: {
-        products() {
-            this.promise.then(this.updateChart);
-        }
-    },
-    computed: {
-        products() {
-            return this.$store.getters["sales/getProducts"];
-        },
-        emblems() {
-            return this.$store.getters["sales/getEmblems"];
-        },
-        rawData() {
-            return this.$store.getters["sales/getData"]("sales/by_price");
-        }
-    },
     methods: {
+        getLogo(value: string) {
+            return `http://gis.mic.gov.py/static/img/emb/${value}_64.png`;
+        },
+        noLogo(obj: any) {
+            obj.target.src = "";
+        },
         fmt(value: number) {
             return (value > 0) ?  Intl.NumberFormat("es-PY").format(value * 1000).replace(".000", "") : 'N/A';
         },
@@ -80,10 +71,61 @@ const SalesPrice = Vue.extend({
             this.values = rawData.data;
             this.loaded = true;
         }
+    }
+});
+
+const SalesPrice = Vue.extend({
+    name: "SalesPrice",
+    extends: SalesBase,
+    watch: {
+        products() {
+            this.promise.then(this.updateChart);
+        }
+    },
+    computed: {
+        products() {
+            return this.$store.getters["sales/getProducts"];
+        },
+        emblems() {
+            return this.$store.getters["sales/getEmblems"];
+        },
+        rawData() {
+            return this.$store.getters["sales/getData"]("sales/by_price");
+        }
     },
     mounted() {
         this.promise = this.$store.dispatch("sales/fetchByName", "by_price");
     }
 });
 
-export default SalesPrice;
+
+const SalesGasPrice = Vue.extend({
+    name: "SalesGasPrice",
+    extends: SalesBase,
+    data() {
+        return {
+            showLogo: true
+        };
+    },
+    watch: {
+        products() {
+            this.promise.then(this.updateChart);
+        }
+    },
+    computed: {
+        products() {
+            return this.$store.getters["sales/getCategories"];
+        },
+        emblems() {
+            return this.$store.getters["sales/getEmblems"];
+        },
+        rawData() {
+            return this.$store.getters["sales/getData"]("sales/gas/by_price");
+        }
+    },
+    mounted() {
+        this.promise = this.$store.dispatch("sales/fetchByName", "gas/by_price");
+    }
+});
+
+export { SalesPrice, SalesGasPrice };

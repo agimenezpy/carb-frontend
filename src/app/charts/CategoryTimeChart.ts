@@ -112,7 +112,10 @@ const CategoryBarTimeChart = Vue.extend({
                         scaleLabel: { display: false, labelString: "Mes" }
                     }]
                 },
-                legend: { display: false },
+                legend: {
+                    display: this.chartData.showLegend || false,
+                    position: 'bottom'
+                },
                 tooltips: {
                     callbacks: {
                         label: (item: any, data: any) => formatter(item.yLabel)
@@ -133,7 +136,9 @@ const CategoryBarTimeChart = Vue.extend({
                         align: 'end',
                         formatter: (value: any, context: any) => formatter(value)
                     },
-                    colorschemes: { scheme: 'office.Office6' }
+                    colorschemes: {
+                        scheme: typeof this.chartData.colors !== 'undefined' ? this.chartData.colors : 'office.Office6'
+                    }
                 },
                 maintainAspectRatio: false
             }

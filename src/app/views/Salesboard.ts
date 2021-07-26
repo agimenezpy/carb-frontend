@@ -6,7 +6,7 @@ import { CompanySales } from './Company';
 import { DepartmentSales } from './Department';
 import { StationCompany, StationDepartment } from './Station';
 import { StationMap } from './StationMap';
-import SalesPrice from './SalesPrice';
+import { SalesPrice } from './SalesPrice';
 import { FilterMonth, FilterCompany, FilterDepartment, FilterYear} from '../filters';
 import Loader from './Loader';
 

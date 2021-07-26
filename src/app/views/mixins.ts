@@ -78,8 +78,11 @@ const FilterUtil = {
             }
             return rawData.filter(item => ((fMonth !== undefined) ? item.fecha.match(months) : true));
         },
-        isEmpty(filter: object) {
-            return Object.keys(filter).length === 0;
+        isEmpty(filter: any) {
+            return (filter.fComp === undefined &&
+                   filter.fMonth  === undefined &&
+                   filter.fDepto === undefined &&
+                   filter.fCntry === undefined);
         }
     }
 };
